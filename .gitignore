@@ -1,0 +1,5 @@
+/node_modules/
+/.idea/
+/package-lock.json
+/static/postman.json
+/resources/openapi.json
