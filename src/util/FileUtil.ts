@@ -7,7 +7,7 @@ export function removeFile(path: string) {
 }
 
 export function writeFile(path: string, content: string) {
-    fs.writeFileSync(path, JSON.stringify(content, null, 2), {
+    fs.writeFileSync(path, content, {
         encoding: 'utf-8'
     });
 }
