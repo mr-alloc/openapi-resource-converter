@@ -50,7 +50,13 @@ export default class RequestBodyParserAdapter implements IParserAdapter<RequestB
      */
     parseReference(toBeParsed: any, components?: Map<string, any>): Array<Field> {
         const referenced = components?.get(toBeParsed[NamedLiteral.REFERENCE_KEY]);
-        return Object.entries(referenced[NamedLiteral.PROPERTIES])
+        const properties = referenced[NamedLiteral.PROPERTIES];
+
+        if (!properties) {
+            return [];
+        }
+
+        return Object.entries(properties)
             .map(([name, property]) => this.parseReferenceRecursive(property, name, components));
     }
 
