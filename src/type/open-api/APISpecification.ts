@@ -1,5 +1,5 @@
 import HttpMethod from "@/type/open-api/constant/HttpMethod";
-import IParsable from "@/type/open-api/protocol/IParsable";
+import IParsable from "@/type/open-api/protocol/i-parsable";
 import Path from "@/type/Path";
 
 export default class APISpecification {

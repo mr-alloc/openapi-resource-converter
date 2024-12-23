@@ -31,7 +31,7 @@ export default class ProjectInformation {
         return this._version;
     }
 
-    static fromJson(jsonObject: any): ProjectInformation {
+    static parse(jsonObject: any): ProjectInformation {
         return new ProjectInformation(
             Contact.fromJson(jsonObject?.contact),
             jsonObject?.description ?? '',

@@ -2,7 +2,7 @@ import IParserAdapter from "@/parser/IParserAdapter";
 import ProtocolType from "@/type/open-api/constant/ProtocolType";
 import serAdapter from "@/parser/RequestBodyParserAdapter";
 import FormDataParserAdapter from "@/parser/FormDataParserAdapter";
-import IParsable from "@/type/open-api/protocol/IParsable";
+import IParsable from "@/type/open-api/protocol/i-parsable";
 import RequestBodyParserAdapter from "@/parser/RequestBodyParserAdapter";
 
 export default class ParserAdapterFactory {
