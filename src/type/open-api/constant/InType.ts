@@ -5,6 +5,7 @@ export default class InType {
     static readonly NONE = new InType('');
     static readonly QUERY = new InType('query'); //Path variable
     static readonly PATH = new InType('path'); //Query Parameter
+    static readonly HEADER = new InType('header');
 
     private static readonly CACHED = CollectionUtil.toMap(InType.values(), (type) => type.value);
     private readonly _value: string;
@@ -21,6 +22,6 @@ export default class InType {
     }
 
     static values() {
-        return [InType.QUERY, InType.PATH];
+        return [InType.QUERY, InType.PATH, InType.HEADER];
     }
 }
