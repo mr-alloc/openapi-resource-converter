@@ -1,4 +1,4 @@
-import IParsable from "@/type/open-api/protocol/IParsable";
+import IParsable from "@/type/open-api/protocol/i-parsable";
 import ProtocolType from "@/type/open-api/constant/ProtocolType";
 import Field from "@/type/open-api/sub/Field";
 

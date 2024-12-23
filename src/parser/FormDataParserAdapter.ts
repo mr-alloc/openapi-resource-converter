@@ -1,5 +1,5 @@
 import IParserAdapter from "@/parser/IParserAdapter";
-import Formdata from "@/type/open-api/protocol/Formdata";
+import Formdata from "@/type/open-api/protocol/formdata";
 import Parameter from "@/type/open-api/sub/Parameter";
 import DataType from "@/type/open-api/constant/DataType";
 import DataFormat from "@/type/open-api/constant/DataFormat";

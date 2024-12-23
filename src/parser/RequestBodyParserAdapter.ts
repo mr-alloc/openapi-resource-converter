@@ -1,5 +1,5 @@
 import IParserAdapter from "@/parser/IParserAdapter";
-import RequestBody from "@/type/open-api/protocol/RequestBody";
+import RequestBody from "@/type/open-api/protocol/request-body";
 import NamedLiteral from "@/type/open-api/constant/NamedLiteral";
 import ValueField from "@/type/open-api/sub/ValueField";
 import DataType from "@/type/open-api/constant/DataType";
@@ -79,7 +79,7 @@ export default class RequestBodyParserAdapter implements IParserAdapter<RequestB
     /**
      * RequestBody를 파싱하기위해 필요한 토큰 경로 반환
      */
-    getTokenPath(): Array<string> {
+    public getTokenPath(): Array<string> {
         return RequestBody.getTokenPath();
     }
 

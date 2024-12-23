@@ -19,4 +19,8 @@ export default class Tag {
         static fromJson(json: any) {
             return new Tag(json.name, json.description);
         }
+
+    static parse(tags: Array<any> = []) {
+        return tags.map(tag => Tag.fromJson(tag));
+    }
 }

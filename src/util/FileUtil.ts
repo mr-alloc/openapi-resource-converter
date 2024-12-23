@@ -1,5 +1,9 @@
 import fs from "fs";
 
+export function notExist(path: string): boolean {
+    return !fs.existsSync(path);
+}
+
 export function removeFile(path: string) {
     fs.rmSync(path, {
         force: true

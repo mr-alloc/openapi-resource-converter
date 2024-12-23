@@ -1,4 +1,4 @@
-import IParsable from "@/type/open-api/protocol/IParsable";
+import IParsable from "@/type/open-api/protocol/i-parsable";
 
 export default class EmptyBody implements IParsable {
 

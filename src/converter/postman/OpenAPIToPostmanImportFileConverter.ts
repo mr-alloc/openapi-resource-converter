@@ -12,13 +12,13 @@ import PostmanDirectory from "@/type/postman/PostmanDirectory";
 import PostmanRequest from "@/type/postman/PostmanRequest";
 import PostmanUrl from "@/type/postman/PostmanUrl";
 import PostmanRequestWrapper from "@/type/postman/PostmanRequestWrapper";
-import IParsable from "@/type/open-api/protocol/IParsable";
-import RequestBody from "@/type/open-api/protocol/RequestBody";
+import IParsable from "@/type/open-api/protocol/i-parsable";
+import RequestBody from "@/type/open-api/protocol/request-body";
 import PostmanBodyWrapper from "@/type/postman/PostmanBodyWrapper";
-import Formdata from "@/type/open-api/protocol/Formdata";
+import Formdata from "@/type/open-api/protocol/formdata";
 import PostmanFormData from "@/type/postman/PostmanFormData";
 import Tag from "@/type/open-api/sub/Tag";
-import EmptyBody from "@/type/open-api/protocol/EmptyBody";
+import EmptyBody from "@/type/open-api/protocol/empty-body";
 import IPostmanRequestBody from "@/type/postman/IPostmanRequestBody";
 import Field from "@/type/open-api/sub/Field";
 import ObjectField from "@/type/open-api/sub/ObjectField";
@@ -61,8 +61,11 @@ export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConv
         });
     }
 
-    convert(): PostmanImportFile {
-        this._openAPI.specs.filter(this.excludePathFilter).forEach(this.exploreNode);
+    public convert(): PostmanImportFile {
+        const filtered = this._openAPI.specs.filter(this.excludePathFilter);
+
+        filtered.forEach(this.exploreNode);
+
         return new PostmanImportFile(this._info, this._nodes)
     }
 

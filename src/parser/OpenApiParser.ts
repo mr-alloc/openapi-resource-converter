@@ -1,13 +1,13 @@
 import OpenAPISpecification from "@/type/open-api/OpenAPISpecification";
 import fs from 'fs';
-import ProjectInformation from "@/type/open-api/project/ProjectInformation";
+import ProjectInformation from "@/type/open-api/project/project-information";
 import Tag from "@/type/open-api/sub/Tag";
 import ParserAdapterFactory from "@/parser/ParserAdapterFactory";
 import ProtocolType from "@/type/open-api/constant/ProtocolType";
 import APISpecification from "@/type/open-api/APISpecification";
 import HttpMethod from "@/type/open-api/constant/HttpMethod";
 import Version from "@/type/open-api/sub/Version";
-import EmptyBody from "@/type/open-api/protocol/EmptyBody";
+import EmptyBody from "@/type/open-api/protocol/empty-body";
 import ComponentParser from "@/parser/ComponentParser";
 import {toProps} from "@/util/ObjectUtil";
 import Path from "@/type/Path";
@@ -31,7 +31,13 @@ function parseInternal(openApiJson: any) {
     const components = ComponentParser.getInstance().parse(openApiJson);
 
     const apiSpecifications = toProps(openApiJson.paths)
-        .flatMap(pathProperty => toProps(pathProperty.value!).map(methodProperty => [pathProperty.name, HttpMethod.fromValue(methodProperty.name), methodProperty.value]))
+        .flatMap(pathProperty => toProps(pathProperty.value!)
+            .map(methodProperty => [
+                pathProperty.name,
+                HttpMethod.fromValue(methodProperty.name),
+                methodProperty.value
+            ])
+        )
         .map(([path, method, meta]) => {
             //meta는 summary, operationId, requestBody, parameters, responses로 구성
             const summary = meta[ProtocolType.SUMMARY.value] ?? Path.ofValue(path).lastValue();
@@ -41,10 +47,10 @@ function parseInternal(openApiJson: any) {
                     const protocolType = ProtocolType.fromValue(key)!;
                     const adapter = adapterFactory.getAppropriateAdapter(protocolType);
                     if ( ! adapter) return [];
-                    const tokenPaths = adapter?.getTokenPath();
+                    const tokenPaths = adapter.getTokenPath();
                     return tokenPaths
-                        ?.filter(tokenPath => adapter?.checkPath(meta[key], tokenPath))
-                        ?.map(tokenPath => adapter?.parse(meta[key], tokenPath, components));
+                        ?.filter(tokenPath => adapter.checkPath(meta[key], tokenPath))
+                        ?.map(tokenPath => adapter.parse(meta[key], tokenPath, components));
                 });
             //요청정보가 없는경우
             if (protocols.length === 0) {
