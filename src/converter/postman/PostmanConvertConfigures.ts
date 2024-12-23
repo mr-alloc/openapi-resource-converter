@@ -56,18 +56,22 @@ export default class PostmanConvertConfigures {
         placeholders.forEach((value, key) => {
             this._valuePlaceholder.set(CaseMode.to(key, this.casingMode), value);
         });
+        return this;
     }
 
     applyOption(option: PostmanConvertOption) {
         this._convertOption = option;
+        return this;
     }
 
     addExcludePaths(paths: Array<string>) {
         this._excludePaths = paths;
+        return this;
     }
 
     addHeaders(headers: Array<PostmanHeader>) {
         this._headers = headers;
+        return this;
 
     }
 

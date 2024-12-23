@@ -3,17 +3,27 @@ import PostmanOptions from "@/type/postman/PostmanOptions";
 import RequestMode from "@/type/postman/constant/RequestMode";
 import IPostmanRequestBody from "@/type/postman/IPostmanRequestBody";
 import {PostmanRequestBody} from "@/type/postman/PostmanRequestBody";
+import PostmanHeader from "@/type/postman/PostmanHeader";
 
 export default class PostmanBodyWrapper {
 
     private readonly _mode: string;
     private readonly _data: PostmanRequestBody;
     private readonly _options?: PostmanOptions;
+    private _headers: Array<PostmanHeader> = [];
 
     private constructor(mode: string, data: PostmanRequestBody, options?: PostmanOptions) {
         this._mode = mode
         this._data = data
         this._options = options
+    }
+
+    set headers(value: Array<PostmanHeader>) {
+        this._headers = value;
+    }
+
+    get headers(): Array<PostmanHeader> {
+        return this._headers;
     }
 
     toJSON() {

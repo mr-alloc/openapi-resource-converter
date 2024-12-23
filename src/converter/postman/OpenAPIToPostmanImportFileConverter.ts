@@ -28,6 +28,8 @@ import ValueField from "@/type/open-api/sub/ValueField";
 import CaseMode from "@/type/postman/constant/CaseMode";
 import Parameter from "@/type/open-api/sub/Parameter";
 import HttpMethod from "@/type/open-api/constant/HttpMethod";
+import InType from "@/type/open-api/constant/InType";
+import PostmanHeader from "@/type/postman/PostmanHeader";
 
 export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConverter<PostmanImportFile> {
 
@@ -115,11 +117,13 @@ export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConv
         const needFilterPathVariableRequest = hasFormData && hasRequestBody && spec.bodies.find(body => body instanceof Formdata)?.needExtract();
         const parsableBodies = needFilterPathVariableRequest ? spec.bodies.filter(body => !(body instanceof Formdata)) : spec.bodies;
 
-        return parsableBodies.map(body => this.extractBody(body, spec.path, spec.method)).map(body => {
+        return parsableBodies.map(body => this.extractBody(body, spec.path, spec.method)).map(bodyWrapper => {
+            const headers = this._configures.headers;
+            headers.push(...bodyWrapper.headers);
             const request = new PostmanRequest(
                 spec.method,
-                this._configures.headers,
-                body,
+                headers,
+                bodyWrapper,
                 PostmanUrl.of(this._configures.host, spec.path.value)
             );
             return new PostmanRequestWrapper(spec.summary, request)
@@ -129,12 +133,17 @@ export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConv
     private readonly extractBody = (parsable: IParsable, path: Path, method: HttpMethod) => {
         if (parsable instanceof RequestBody) {
             const requestBody = parsable as RequestBody;
-            const body = this.toPostmanRawBody(requestBody.fields);
-            return PostmanBodyWrapper.fromRaw(this._configures.wrappingBody(path, method, body));
+            let rawBody = this.toPostmanRawBody(requestBody.fields);
+            const wrappedBody = this._configures.wrappingBody(path, method, rawBody);
+            return PostmanBodyWrapper.fromRaw(wrappedBody);
         } else if (parsable instanceof Formdata) {
             const formdata = parsable as Formdata;
-            const data = formdata.parameters.map(this.toPostmanFormData);
-            return PostmanBodyWrapper.fromFormData(data);
+            const parameters = formdata.parameters;
+            const data = parameters.filter(param => param.in.value !== InType.HEADER.value).map(this.toPostmanFormData);
+            const headers = parameters.filter(param => param.in.value === InType.HEADER.value);
+            const bodyWrapper = PostmanBodyWrapper.fromFormData(data);
+            bodyWrapper.headers = headers.map(header => new PostmanHeader(header.name, DefaultField.fromTypeFormat(header.type, header.format).value))
+            return bodyWrapper;
         } else if (parsable instanceof EmptyBody) {
             const defaultBody = this._configures.wrappingBody(path, method, {});
             return Array.isArray(defaultBody)
@@ -160,16 +169,16 @@ export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConv
     private readonly toPostmanRawBody = (fields: Array<Field>): IPostmanRequestBody => {
         return fields.reduce((body, field) => {
             const casedKey = CaseMode.to(field.name, this._configures.casingMode);
-            body[casedKey] = this.toPostmanRawBodyRecursive(field);
+            body[casedKey] = this.extractFieldValueRecursive(field);
             return body;
         }, {} as { [key: string]: IPostmanRequestBody });
     }
 
-    private readonly toPostmanRawBodyRecursive = (field: Field): IPostmanRequestBody => {
+    private readonly extractFieldValueRecursive = (field: Field): IPostmanRequestBody => {
         if (field.type.isObject()) {
             const objectField = field as ObjectField
             const body: { [key: string]: IPostmanRequestBody } = {};
-            objectField.fields?.forEach(field => body[CaseMode.to(field.name, this._configures.casingMode)] = this.toPostmanRawBodyRecursive(field));
+            objectField.fields?.forEach(field => body[CaseMode.to(field.name, this._configures.casingMode)] = this.extractFieldValueRecursive(field));
             return body;
         }
 
