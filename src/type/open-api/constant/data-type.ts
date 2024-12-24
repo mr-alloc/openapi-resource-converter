@@ -1,4 +1,4 @@
-import CollectionUtil from "@/util/CollectionUtil";
+import { toMap } from "@/util/collection-util";
 
 export default class DataType {
 
@@ -9,7 +9,7 @@ export default class DataType {
     static readonly OBJECT = new DataType("object");
     static readonly NONE = new DataType("none");
 
-    private static readonly CACHED = CollectionUtil.toMap(DataType.values(), (dataType) => dataType.value);
+    private static readonly CACHED = toMap(DataType.values(), (dataType) => dataType.value);
     private readonly _value: string;
     constructor(value: string) {
         this._value = value;

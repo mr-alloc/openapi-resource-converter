@@ -1,4 +1,4 @@
-import ProtocolType from "@/type/open-api/constant/ProtocolType";
+import ProtocolType from "@/type/open-api/constant/protocol-type";
 
 export default class RequestMode {
 

@@ -1,5 +1,5 @@
-import DataType from "@/type/open-api/constant/DataType";
-import DataFormat from "@/type/open-api/constant/DataFormat";
+import DataType from "@/type/open-api/constant/data-type";
+import DataFormat from "@/type/open-api/constant/data-format";
 
 export default class DefaultValue {
 

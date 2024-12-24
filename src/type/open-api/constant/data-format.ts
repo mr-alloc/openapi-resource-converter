@@ -1,4 +1,4 @@
-import CollectionUtil from "@/util/CollectionUtil";
+import { toMap } from "@/util/collection-util";
 
 export default class DataFormat {
     static readonly INT32 = new DataFormat("int32");
@@ -8,7 +8,7 @@ export default class DataFormat {
     static readonly NONE = new DataFormat("none");
 
 
-    private static readonly CACHED = CollectionUtil.toMap(DataFormat.values(), (dataFormat) => dataFormat.value);
+    private static readonly CACHED = toMap(DataFormat.values(), (dataFormat) => dataFormat.value);
     private readonly _value: string;
     constructor(value: string) {
         this._value = value;

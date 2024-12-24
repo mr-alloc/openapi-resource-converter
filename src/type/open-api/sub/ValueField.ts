@@ -1,8 +1,10 @@
-import DataType from "@/type/open-api/constant/DataType";
-import DataFormat from "@/type/open-api/constant/DataFormat";
-import Field from "@/type/open-api/sub/Field";
+import DataType from "@/type/open-api/constant/data-type";
+import DataFormat from "@/type/open-api/constant/data-format";
+import IField from "@/type/open-api/sub/i-field";
+import {getProp, getPropOrDefault, Property} from "@/util/object-util";
+import NamedLiteral from "@/type/open-api/constant/NamedLiteral";
 
-export default class ValueField implements Field {
+export default class ValueField implements IField {
 
     private readonly _name: string;
     private readonly _description: string;
@@ -42,6 +44,17 @@ export default class ValueField implements Field {
 
     get example(): string {
         return this._example;
+    }
+
+    public static fromProperty(property: Property) {
+        return new ValueField(
+            property.name,
+            getPropOrDefault(property.value, NamedLiteral.DESCRIPTION, ''),
+            DataType.fromValue(getProp(property.value, NamedLiteral.TYPE)),
+            DataFormat.fromValue(getProp(property.value, NamedLiteral.FORMAT)),
+            '',
+            getPropOrDefault(property.value, NamedLiteral.EXAMPLE, '')
+        );
     }
 
     public toString(): string {
