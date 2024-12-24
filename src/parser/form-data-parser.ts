@@ -1,27 +1,28 @@
-import IParserAdapter from "@/parser/IParserAdapter";
+import IParser from "@/parser/i-parser";
 import Formdata from "@/type/open-api/protocol/formdata";
 import Parameter from "@/type/open-api/sub/Parameter";
-import DataType from "@/type/open-api/constant/DataType";
-import DataFormat from "@/type/open-api/constant/DataFormat";
+import DataType from "@/type/open-api/constant/data-type";
+import DataFormat from "@/type/open-api/constant/data-format";
 import InType from "@/type/open-api/constant/InType";
+import ProtocolType from "@/type/open-api/constant/protocol-type";
 
 
-export default class FormDataParserAdapter implements IParserAdapter<Formdata> {
+export default class FormDataParser implements IParser<Formdata> {
 
-    private static INSTANCE: FormDataParserAdapter = new FormDataParserAdapter();
+    private static INSTANCE: FormDataParser = new FormDataParser();
     private constructor() {}
 
-    public static getInstance(): FormDataParserAdapter {
-        return FormDataParserAdapter.INSTANCE;
+    public static getInstance(): FormDataParser {
+        return FormDataParser.INSTANCE;
     }
 
-    checkPath(toBeParsed: any, tokenPath?: string): boolean {
+    public checkPath(toBeParsed: any, tokenPath?: string): boolean {
         return true;
     }
 
-    getTokenPath(): Array<string> {
+    public getTokenPath(protocol: ProtocolType): string {
         //파라미터는 토큰패스가 없다. 따라서 한개의 빈 문자열을 반환한다. (최소 한번은 수행)
-        return [""];
+        return '';
     }
 
     parse(toBeParsed: any, tokenPath?: string): Formdata {

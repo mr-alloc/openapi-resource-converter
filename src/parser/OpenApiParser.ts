@@ -2,14 +2,14 @@ import OpenAPISpecification from "@/type/open-api/OpenAPISpecification";
 import fs from 'fs';
 import ProjectInformation from "@/type/open-api/project/project-information";
 import Tag from "@/type/open-api/sub/Tag";
-import ParserAdapterFactory from "@/parser/ParserAdapterFactory";
-import ProtocolType from "@/type/open-api/constant/ProtocolType";
+import ParserFactory from "@/parser/parser-factory";
+import ProtocolType from "@/type/open-api/constant/protocol-type";
 import APISpecification from "@/type/open-api/APISpecification";
 import HttpMethod from "@/type/open-api/constant/HttpMethod";
 import Version from "@/type/open-api/sub/Version";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
-import ComponentParser from "@/parser/ComponentParser";
-import {toProps} from "@/util/ObjectUtil";
+import ComponentParser from "@/parser/component-parser";
+import {toProps} from "@/util/object-util";
 import Path from "@/type/Path";
 
 
@@ -27,7 +27,7 @@ function parseInternal(openApiJson: any) {
     const version = Version.parse(openApiJson.openapi);
     const info = ProjectInformation.fromJson(openApiJson.info);
     const tags = openApiJson.tags?.map((tag: any) => Tag.fromJson(tag)) ?? [];
-    const adapterFactory = ParserAdapterFactory.getInstance();
+    const adapterFactory = ParserFactory.getInstance();
     const components = ComponentParser.getInstance().parse(openApiJson);
 
     const apiSpecifications = toProps(openApiJson.paths)

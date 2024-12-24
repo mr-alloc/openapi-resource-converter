@@ -1,6 +1,6 @@
 import HttpMethod from "@/type/open-api/constant/HttpMethod";
-import {Property, toProps} from "@/util/ObjectUtil";
-import ProtocolType from "@/type/open-api/constant/ProtocolType";
+import {Property, toProps} from "@/util/object-util";
+import ProtocolType from "@/type/open-api/constant/protocol-type";
 import Path from "@/type/Path";
 
 export default class OpenApiRequest {

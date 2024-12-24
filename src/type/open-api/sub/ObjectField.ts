@@ -1,14 +1,14 @@
-import DataType from "@/type/open-api/constant/DataType";
-import Field from "@/type/open-api/sub/Field";
+import DataType from "@/type/open-api/constant/data-type";
+import IField from "@/type/open-api/sub/i-field";
 
-export default class ObjectField implements Field {
+export default class ObjectField implements IField {
 
     private readonly _name: string;
     private readonly _description: string;
     private readonly _type: DataType;
-    private readonly _fields: Array<Field>;
+    private readonly _fields: Array<IField>;
 
-    constructor(name: string, description: string, type: DataType, fields: Array<Field>) {
+    constructor(name: string, description: string, type: DataType, fields: Array<IField>) {
         this._name = name;
         this._description = description;
         this._type = type;
@@ -27,7 +27,7 @@ export default class ObjectField implements Field {
         return this._type;
     }
 
-    get fields(): Array<Field> {
+    get fields(): Array<IField> {
         return this._fields;
     }
 

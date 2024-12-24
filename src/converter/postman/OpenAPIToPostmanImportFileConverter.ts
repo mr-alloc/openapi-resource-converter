@@ -2,7 +2,7 @@ import IOpenAPIConverter from "@/converter/IOpenAPIConverter";
 import PostmanImportFile from "@/type/postman/PostmanImportFile";
 import OpenAPISpecification from "@/type/open-api/OpenAPISpecification";
 import APISpecification from "@/type/open-api/APISpecification";
-import CollectionUtil from "@/util/CollectionUtil";
+import CollectionUtil from "@/util/collection-util";
 import PostmanInfo from "@/type/postman/PostmanInfo";
 import crypto from "crypto";
 import IPostmanNode from "@/type/postman/IPostmanNode";
@@ -20,7 +20,7 @@ import PostmanFormData from "@/type/postman/PostmanFormData";
 import Tag from "@/type/open-api/sub/Tag";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
 import IPostmanRequestBody from "@/type/postman/IPostmanRequestBody";
-import Field from "@/type/open-api/sub/Field";
+import IField from "@/type/open-api/sub/i-field";
 import ObjectField from "@/type/open-api/sub/ObjectField";
 import DefaultValue from "@/type/postman/constant/DefaultValue";
 import DefaultField from "@/type/postman/constant/DefaultValue";
@@ -169,7 +169,7 @@ export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConv
         )
     }
 
-    private readonly toPostmanRawBody = (fields: Array<Field>): IPostmanRequestBody => {
+    private readonly toPostmanRawBody = (fields: Array<IField>): IPostmanRequestBody => {
         return fields.reduce((body, field) => {
             const casedKey = CaseMode.to(field.name, this._configures.casingMode);
             body[casedKey] = this.extractFieldValueRecursive(field);
@@ -177,7 +177,7 @@ export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConv
         }, {} as { [key: string]: IPostmanRequestBody });
     }
 
-    private readonly extractFieldValueRecursive = (field: Field): IPostmanRequestBody => {
+    private readonly extractFieldValueRecursive = (field: IField): IPostmanRequestBody => {
         if (field.type.isObject()) {
             const objectField = field as ObjectField
             const body: { [key: string]: IPostmanRequestBody } = {};

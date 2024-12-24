@@ -1,4 +1,4 @@
-import CollectionUtil from "@/util/CollectionUtil";
+import CollectionUtil from "@/util/collection-util";
 
 export default class InType {
 

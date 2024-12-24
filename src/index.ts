@@ -1,16 +1,26 @@
-import OpenApiParser from "@/parser/OpenApiParser";
-import OpenAPIToPostmanImportFileConverter from "@/converter/postman/OpenAPIToPostmanImportFileConverter";
-import PostmanConvertConfigures from "@/converter/postman/PostmanConvertConfigures";
-import {writeNewFile} from "@/util/FileUtil";
-import CaseMode from "@/type/postman/constant/CaseMode";
+import {readFile} from "@/util/file-util";
+import {Command} from "commander";
+import ComponentParser from "@/parser/component-parser";
 
+const currentPath = process.cwd();
+const postmanFilePath = '/static/postman.json';
+const openApiFilePath = '/resources/openapi.json';
+// const json = readFile(`${currentPath}${postmanFilePath}`);
 
-const openAPI = OpenApiParser.parse('./resources/openapi.json');
-const configures = new PostmanConvertConfigures("{{url}}", CaseMode.SNAKE);
-const converter = new OpenAPIToPostmanImportFileConverter(openAPI, configures);
+const program = new Command();
 
-const path = `${process.cwd()}/static/postman.json`
-const converted = converter.convert();
-writeNewFile(path, JSON.stringify(converted, null, 2));
+program
+    .name("orc")
+    .command('orc')
+    .description('Simple Open API Specification Converter')
+    .version('1.0.0')
+    .option('-o, --component', 'Convert only components')
+    .action((options) => {
+        const file = readFile(`${currentPath}${openApiFilePath}`);
+        const json = JSON.parse(file);
 
+        const map = new ComponentParser(json.components).parse();
+        console.log('total components:', map.size);
+    });
 
+program.parse();
