@@ -1,6 +1,6 @@
 import Parameter from "@/type/open-api/sub/Parameter";
 import IParsable from "@/type/open-api/protocol/i-parsable";
-import InType from "@/type/open-api/constant/InType";
+import InType from "@/type/open-api/constant/in-type";
 
 export default class Formdata implements IParsable {
 

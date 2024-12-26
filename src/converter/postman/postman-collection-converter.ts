@@ -1,12 +1,12 @@
-import IOpenAPIConverter from "@/converter/IOpenAPIConverter";
+import IOpenapiConverter from "@/converter/i-openapi-converter";
 import PostmanImportFile from "@/type/postman/PostmanImportFile";
 import OpenAPISpecification from "@/type/open-api/OpenAPISpecification";
 import APISpecification from "@/type/open-api/APISpecification";
-import CollectionUtil from "@/util/collection-util";
+import {groupingAndThen, toMap} from "@/util/collection-util";
 import PostmanInfo from "@/type/postman/PostmanInfo";
 import crypto from "crypto";
 import IPostmanNode from "@/type/postman/IPostmanNode";
-import PostmanConvertConfigures from "@/converter/postman/PostmanConvertConfigures";
+import PostmanConvertConfigures from "@/converter/postman/postman-convert-configures";
 import Path from "@/type/Path";
 import PostmanDirectory from "@/type/postman/PostmanDirectory";
 import PostmanRequest from "@/type/postman/PostmanRequest";
@@ -27,11 +27,11 @@ import DefaultField from "@/type/postman/constant/DefaultValue";
 import ValueField from "@/type/open-api/sub/ValueField";
 import CaseMode from "@/type/postman/constant/CaseMode";
 import Parameter from "@/type/open-api/sub/Parameter";
-import HttpMethod from "@/type/open-api/constant/HttpMethod";
-import InType from "@/type/open-api/constant/InType";
+import HttpMethod from "@/type/open-api/constant/http-method";
+import InType from "@/type/open-api/constant/in-type";
 import PostmanHeader from "@/type/postman/PostmanHeader";
 
-export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConverter<PostmanImportFile> {
+export default class PostmanCollectionConverter implements IOpenapiConverter {
 
     private readonly _openAPI: OpenAPISpecification;
     private readonly _group: Map<string, Map<string, APISpecification>>;
@@ -40,17 +40,17 @@ export default class OpenAPIToPostmanImportFileConverter implements IOpenAPIConv
     private readonly _configures: PostmanConvertConfigures;
     private readonly _tagMap: Map<string, Tag>;
 
-    constructor(openAPI: OpenAPISpecification, configures: PostmanConvertConfigures) {
+    public constructor(openAPI: OpenAPISpecification, configures: PostmanConvertConfigures) {
         this._openAPI = openAPI;
-        this._group = CollectionUtil.groupingAndThen(
+        this._group = groupingAndThen(
             openAPI.specs,
             (spec) => spec.path.value,
-            (values) => CollectionUtil.toMap(values, (spec) => spec.method.value.toUpperCase())
+            (values) => toMap(values, (spec) => spec.method.value.toUpperCase())
         );
         this._info = new PostmanInfo(crypto.randomUUID(), openAPI.info.title, 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json', '23012590');
         this._nodes = [];
         this._configures = configures;
-        this._tagMap = CollectionUtil.toMap(openAPI.tags, tag => {
+        this._tagMap = toMap(openAPI.tags, tag => {
             // extract end point from description
             const extractedTag = /\/[a-zA-Z_{}\/]+/g.exec(tag.description);
             if (extractedTag) {

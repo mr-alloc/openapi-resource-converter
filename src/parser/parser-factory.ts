@@ -8,7 +8,7 @@ import RequestBodyParser from "@/parser/request-body-parser";
 export default class ParserFactory {
 
     private static INSTANCE: ParserFactory = new ParserFactory();
-    private static readonly ADAPTER_MAP: Map<ProtocolType, IParser<IParsable>> = new Map<ProtocolType, IParser<IParsable>>([
+    private static readonly PARSER_MAP: Map<ProtocolType, IParser<IParsable>> = new Map<ProtocolType, IParser<IParsable>>([
         [ProtocolType.REQUEST_BODY, RequestBodyParser.getInstance()],
         [ProtocolType.PARAMETERS, FormDataParser.getInstance()]
     ]);
@@ -21,6 +21,6 @@ export default class ParserFactory {
     }
 
     public getParser(protocolType: ProtocolType): IParser<IParsable> | undefined {
-        return ParserFactory.ADAPTER_MAP.get(protocolType);
+        return ParserFactory.PARSER_MAP.get(protocolType);
     }
 }

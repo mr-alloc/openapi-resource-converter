@@ -1,26 +1,24 @@
 import PostmanHeader from "@/type/postman/PostmanHeader";
 import IPostmanRequestBody from "@/type/postman/IPostmanRequestBody";
 import CaseMode from "@/type/postman/constant/CaseMode";
-import PostmanConvertOption from "@/converter/postman/PostmanConvertOption";
 import Path from "@/type/Path";
-import HttpMethod from "@/type/open-api/constant/HttpMethod";
+import HttpMethod from "@/type/open-api/constant/http-method";
 import Parameter from "@/type/open-api/sub/Parameter";
 
 export default class PostmanConvertConfigures {
 
     private _excludePaths: Array<string>;
-    private readonly _host: string;
+    private _host: string;
     private _headers: Array<PostmanHeader>;
-    private readonly _casingMode: CaseMode;
+    private _casingMode: CaseMode;
     private _defaultBodyWrapper: ((path: Path, method: HttpMethod, body: IPostmanRequestBody) => IPostmanRequestBody) | undefined;
-    private readonly _valuePlaceholder = new Map<string, any>;
-    private _convertOption?: PostmanConvertOption;
+    private _valuePlaceholder = new Map<string, any>;
 
-    constructor(host: string, casingMode: CaseMode) {
+    constructor() {
         this._excludePaths = [];
-        this._host = host;
+        this._host = 'localhost';
         this._headers = [];
-        this._casingMode = casingMode;
+        this._casingMode = CaseMode.CAMEL;
     }
 
     get excludePaths(): Array<string> {
@@ -43,10 +41,6 @@ export default class PostmanConvertConfigures {
         return this._valuePlaceholder;
     }
 
-    get convertOption(): PostmanConvertOption | undefined {
-        return this._convertOption;
-    }
-
     defaultBodyWrapper(value: (path: Path, method: HttpMethod, body: IPostmanRequestBody) => IPostmanRequestBody | Array<Parameter>) {
         this._defaultBodyWrapper = value;
         return this;
@@ -56,11 +50,6 @@ export default class PostmanConvertConfigures {
         placeholders.forEach((value, key) => {
             this._valuePlaceholder.set(CaseMode.to(key, this.casingMode), value);
         });
-        return this;
-    }
-
-    applyOption(option: PostmanConvertOption) {
-        this._convertOption = option;
         return this;
     }
 

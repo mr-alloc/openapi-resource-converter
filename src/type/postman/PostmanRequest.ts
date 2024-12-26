@@ -1,7 +1,7 @@
 import PostmanHeader from "@/type/postman/PostmanHeader";
 import PostmanUrl from "@/type/postman/PostmanUrl";
 import PostmanBodyWrapper from "@/type/postman/PostmanBodyWrapper";
-import HttpMethod from "@/type/open-api/constant/HttpMethod";
+import HttpMethod from "@/type/open-api/constant/http-method";
 
 export default class PostmanRequest {
 

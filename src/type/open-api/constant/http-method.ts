@@ -1,4 +1,4 @@
-import CollectionUtil from "@/util/collection-util";
+import { toMap } from "@/util/collection-util";
 
 export default class HttpMethod {
 
@@ -10,7 +10,7 @@ export default class HttpMethod {
     static readonly HEAD = new HttpMethod("head");
     static readonly OPTIONS = new HttpMethod("options");
 
-    private static readonly CACHED = CollectionUtil.toMap(HttpMethod.values(), (method) => method.value);
+    private static readonly CACHED = toMap(HttpMethod.values(), (method) => method.value);
 
     private readonly _value: string;
     private constructor(value: string) {
@@ -31,5 +31,9 @@ export default class HttpMethod {
 
     static values(): Array<HttpMethod> {
         return [HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH, HttpMethod.HEAD, HttpMethod.OPTIONS];
+    }
+
+    public toString(): string {
+        return this._value;
     }
 }

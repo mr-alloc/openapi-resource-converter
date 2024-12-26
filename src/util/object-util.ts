@@ -24,11 +24,11 @@ function checkPathRecursive(property: Array<Property>, tokens: Array<string>, in
     return parseTarget !== undefined;
 }
 
-export function getProps(object: any | undefined, tokenPath: string): Array<Property> {
-    if (tokenPath === '') {
+export function getProps(object: any | undefined, tokens: Array<string>): Array<Property> {
+    if (tokens.length === 0) {
         return toProps(object);
     }
-    const tokens = tokenPath.split('.');
+
     return getPropsRecursive(object, tokens, 0);
 }
 
@@ -54,6 +54,24 @@ export function getPropOrDefault<T>(object: any | undefined, key: string, defaul
     return  object[key] ?? defaultValue;
 }
 
+export function getPropRecursive<T>(object: any | undefined, tokenPath: string): T {
+    if (tokenPath === '') {
+        return object;
+    }
+    const tokens = tokenPath.split('.');
+    return getPropRecursiveInternal<T>(object, tokens, 0);
+}
+
+function getPropRecursiveInternal<T>(object: any, tokens: Array<string>, index: number): T {
+    const parseTarget = object?.[tokens[index]];
+    const hasDepth = tokens.length - 1 > index;
+    if (hasDepth && parseTarget) {
+        return getPropRecursiveInternal(parseTarget, tokens, index + 1);
+    }
+
+    return parseTarget;
+}
+
 
 export class Property {
     private readonly _name: string;
@@ -70,5 +88,9 @@ export class Property {
 
     get value(): any {
         return this._value;
+    }
+
+    public toString(): string {
+        return `${this._name}: ${JSON.stringify(this._value)}`;
     }
 }

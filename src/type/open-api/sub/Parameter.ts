@@ -1,4 +1,4 @@
-import InType from "@/type/open-api/constant/InType";
+import InType from "@/type/open-api/constant/in-type";
 import DataType from "@/type/open-api/constant/data-type";
 import DataFormat from "@/type/open-api/constant/data-format";
 

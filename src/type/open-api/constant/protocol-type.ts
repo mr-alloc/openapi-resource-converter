@@ -1,4 +1,4 @@
-import CollectionUtil from "@/util/collection-util";
+import { toMap } from "@/util/collection-util";
 
 export default class ProtocolType {
 
@@ -9,7 +9,7 @@ export default class ProtocolType {
     static readonly URL_ENCODED = new ProtocolType("urlencoded");
     static readonly TAGS = new ProtocolType("tags");
 
-    private static readonly CACHED = CollectionUtil.toMap(ProtocolType.values(), (type) => type.value)
+    private static readonly CACHED = toMap(ProtocolType.values(), (type) => type.value)
     private readonly _value: string;
     private constructor(value: string) {
         this._value = value;
@@ -19,15 +19,23 @@ export default class ProtocolType {
         return this._value;
     }
 
-    static values() {
+    public static values() {
         return [ProtocolType.REQUEST_BODY, ProtocolType.PARAMETERS, ProtocolType.URL_ENCODED];
     }
 
-    static fromValue(value: string): ProtocolType | undefined {
+    public static fromValue(value: string): ProtocolType | undefined {
         return ProtocolType.CACHED.get(value);
     }
 
-    static hasValue(value: string): boolean {
+    public static hasValue(value: string): boolean {
         return ProtocolType.CACHED.has(value);
+    }
+
+    public static isProtocolFormat(name: string) {
+        return this.values().some((type) => type.value === name);
+    }
+
+    public toString(): string {
+        return this._value;
     }
 }

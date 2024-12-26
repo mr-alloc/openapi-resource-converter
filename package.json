@@ -1,19 +1,25 @@
 {
   "name": "openapi-resource-converter",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postman": "ts-node -r tsconfig-paths/register src/index"
+    "clean": "rimraf ./dist && rimraf ./src/*.js ./src/**/*.js",
+    "clean:js": "rimraf ./src/*.js ./src/**/*.js",
+    "build": "tsc",
+    "rebuild": "yarn clean && yarn build",
+    "convert": "ts-node -r tsconfig-paths/register src/index"
   },
   "bin": {
-    "orc": "src/index.ts"
+    "orc": "./dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "This is a tool to convert OpenAPI 3.0 resources to TypeScript classes, ",
   "devDependencies": {
+    "cross-env": "^7.0.3",
+    "dist": "^0.1.2",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "5.4"

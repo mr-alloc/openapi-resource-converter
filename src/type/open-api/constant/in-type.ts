@@ -1,4 +1,4 @@
-import CollectionUtil from "@/util/collection-util";
+import { toMap } from "@/util/collection-util";
 
 export default class InType {
 
@@ -7,7 +7,7 @@ export default class InType {
     static readonly PATH = new InType('path'); //Query Parameter
     static readonly HEADER = new InType('header');
 
-    private static readonly CACHED = CollectionUtil.toMap(InType.values(), (type) => type.value);
+    private static readonly CACHED = toMap(InType.values(), (type) => type.value);
     private readonly _value: string;
     private constructor(value: string) {
         this._value = value;

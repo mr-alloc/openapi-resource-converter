@@ -1,4 +1,4 @@
-import CollectionUtil from "@/util/collection-util";
+import {split} from "@/util/collection-util";
 
 export default class PostmanUrl {
 
@@ -27,7 +27,7 @@ export default class PostmanUrl {
             `${host}${endPoint}`,
             '',
             [host],
-            CollectionUtil.split(endPoint, '/')
+            split(endPoint, '/')
         )
     }
 }
