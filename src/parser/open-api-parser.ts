@@ -12,101 +12,106 @@ import ParserFactory from "@/parser/parser-factory";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
 import OpenAPISpecification from "@/type/open-api/OpenAPISpecification";
 import ComponentParser from "@/parser/component-parser";
+import IField from "@/type/open-api/sub/i-field";
 
 
-export const parse = (filePath: string, encoding: BufferEncoding = 'utf-8') => {
-    if (notExist(filePath))
-        throw new Error(`Not found file with path: ${filePath}`);
 
-    const file = readFile(filePath, encoding);
-    const { version, info, tags, paths } = parseMetadata(toJson(file));
+export class OpenApiParser {
 
-    const requests = parseToRequests(paths);
-    const specs = parseToSpecs(requests);
+    private readonly _version: Version;
+    private readonly _info: ProjectInformation;
+    private readonly _tags: Array<Tag>;
+    private readonly _components: Map<string, Array<IField>>;
+    private readonly _paths: Array<Property>;
 
-    return new OpenAPISpecification(version, info, tags, specs);
-}
+    public constructor(filePath: string, encoding: BufferEncoding = 'utf-8') {
+        if (notExist(filePath))
+            throw new Error(`Not found file with path: ${filePath}`);
+        const json = toJson(readFile(filePath, encoding));
 
-const parseMetadata = (json: any) => {
-    return {
-        version: Version.parse(json.openapi),
-        info: ProjectInformation.parse(json.info),
-        tags: Tag.parse(json.tags),
-        paths: toProps(json.paths),
-        components: new ComponentParser(json.components).parse()
+        this._version = Version.parse(json.openapi);
+        this._info = ProjectInformation.parse(json.info);
+        this._tags = Tag.parse(json.tags);
+        this._components = new ComponentParser(json.components).parse();
+        this._paths = toProps(json.paths);
     }
-}
 
-/*
+    public parse(): OpenAPISpecification {
+        const requests = this.parseToRequests(this._paths);
+        const specs = this.parseToSpecs(requests);
 
-AS IS
-"paths": {
-    "/zapi/common/pstk/verify_pstk": {
-        "post": {}
-    },
-    "/zapi/buy/pmangcash_delay": {
-        "post": {}
-    },
-    "/wtapi/club/correct": {
-        "post": {}
+        return new OpenAPISpecification(this._version, this._info, this._tags, specs);
     }
-}
 
-TO BE
-[
-    {
-        "path": "/zapi/common/pstk/verify_pstk",
-        "method": HttpMethod.POST,
-        "metadata": {}
-    }
-    ...
-]
-*/
-const parseToRequests = (paths: Array<Property>): Array<OpenApiRequest> => {
-    const result = new Array<OpenApiRequest>();
-    //각 API 경로별로
-    for (const pathProperty of paths) {
-        const methodProperties = toProps(pathProperty.value);
-
-        //각 메소드 별로
-        for (const methodProperty of methodProperties) {
-            result.push(OpenApiRequest.parse(pathProperty.name, methodProperty));
+    /*
+    AS IS
+    "paths": {
+        "/zapi/common/pstk/verify_pstk": {
+            "post": {}
+        },
+        "/zapi/buy/pmangcash_delay": {
+            "post": {}
+        },
+        "/wtapi/club/correct": {
+            "post": {}
         }
     }
 
-    return result;
-}
+    TO BE
+    [
+        {
+            "path": "/zapi/common/pstk/verify_pstk",
+            "method": HttpMethod.POST,
+            "metadata": {}
+        }
+        ...
+    ]
+    */
+    private parseToRequests(paths: Array<Property>): Array<OpenApiRequest> {
+        const result = new Array<OpenApiRequest>();
+        //각 API 경로별로
+        for (const pathProperty of paths) {
+            const methodProperties = toProps(pathProperty.value);
 
-const parseToSpecs = (requests: Array<OpenApiRequest>) => {
-    const specs = new Array<APISpecification>();
-    //각 요청별로
-    for (const request of requests) {
-        const summary = request.summary;
-        const bodies = new Array<IParsable>();
-
-        //요청내 요청값 별로 (request body, parameters, form data...)
-        for (const protocol of request.metadataProtocols) {
-            const metaDataValues = request.metadataOf(protocol);
-            const adapter = ParserFactory.getInstance().getParser(protocol);
-            if (! adapter) continue;
-
-            //각 토큰 별로 (요청값 별로 토큰이 나눠져 있음으로 한번 더 반복이 필요없음
-            const tokenPath = adapter.getTokenPath(protocol);
-            if (checkPath(metaDataValues, tokenPath)) {
-                bodies.push(adapter.parse(metaDataValues, tokenPath));
+            //각 메소드 별로
+            for (const methodProperty of methodProperties) {
+                result.push(OpenApiRequest.parse(pathProperty.name, methodProperty));
             }
         }
 
-        //요청 파라미터 정보가 없어도, 빈 요청을 생성한다.
-        specs.push(new APISpecification(
-            request.method,
-            request.path,
-            summary,
-            (bodies.length === 0 ? [new EmptyBody()] : bodies)
-        ));
-
+        return result;
     }
-    
-    return specs;
-}
 
+    private parseToSpecs(requests: Array<OpenApiRequest>): Array<APISpecification> {
+        const specs = new Array<APISpecification>();
+        //각 요청별로
+        for (const request of requests) {
+            const summary = request.summary;
+            const bodies = new Array<IParsable>();
+
+            //요청내 요청값 별로 (request body, parameters, form data...)
+            for (const protocol of request.metadataProtocols) {
+                const metaDataValues = request.metadataOf(protocol);
+                const adapter = ParserFactory.getInstance().getParser(protocol);
+                if (! adapter) continue;
+
+                //각 토큰 별로 (요청값 별로 토큰이 나눠져 있음으로 한번 더 반복이 필요없음
+                const tokenPath = adapter.getTokenPath(protocol);
+                if (checkPath(metaDataValues, tokenPath)) {
+                    bodies.push(adapter.parse(metaDataValues, tokenPath));
+                }
+            }
+
+            //요청 파라미터 정보가 없어도, 빈 요청을 생성한다.
+            specs.push(new APISpecification(
+                request.method,
+                request.path,
+                summary,
+                (bodies.length === 0 ? [new EmptyBody()] : bodies)
+            ));
+
+        }
+
+        return specs;
+    }
+}
