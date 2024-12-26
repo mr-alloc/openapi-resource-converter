@@ -1,4 +1,4 @@
-import NamedLiteral from "@/type/open-api/constant/NamedLiteral";
+import NamedLiteral from "@/type/open-api/constant/named-literal";
 import IField from "@/type/open-api/sub/i-field";
 import {getProp, getProps, hasProp, Property, toProps} from "@/util/object-util";
 import {toMap, toValueMap} from "@/util/collection-util";
@@ -15,7 +15,7 @@ export default class ComponentParser {
     private readonly _cache: Map<string, Array<IField>>;
 
     public constructor(components: any) {
-        this._properties = getProps(components, this.SCHEMAS_PATH);
+        this._properties = getProps(components, [this.SCHEMAS_PATH]);
         this._rootProperty = toMap<Property, string>(
             this._properties,
             (prop) => this.COMPONENTS_KEY_PREFIX + prop.name
@@ -51,7 +51,7 @@ export default class ComponentParser {
         }
 
         const parent = this._rootProperty.get(referenceKey)!;
-        const properties = getProps(parent.value, NamedLiteral.PROPERTIES);
+        const properties = getProps(parent.value, [NamedLiteral.PROPERTIES]);
         const fields = new Array<IField>();
 
         // console.log(`(${properties.length}): ${referenceKey}`);

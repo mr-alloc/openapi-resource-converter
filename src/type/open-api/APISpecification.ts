@@ -1,4 +1,4 @@
-import HttpMethod from "@/type/open-api/constant/HttpMethod";
+import HttpMethod from "@/type/open-api/constant/http-method";
 import IParsable from "@/type/open-api/protocol/i-parsable";
 import Path from "@/type/Path";
 

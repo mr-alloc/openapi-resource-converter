@@ -1,17 +1,17 @@
 import IParsable from "@/type/open-api/protocol/i-parsable";
 import IField from "@/type/open-api/sub/i-field";
 import ProtocolType from "@/type/open-api/constant/protocol-type";
+import {ContentType} from "@/type/open-api/constant/content-type";
 
 export default class RequestBody implements IParsable {
 
     private static readonly TOKEN_PATH_CONTENT_JSON_SCHEMA_PROPERTIES = "content.application/json.schema.properties";
     private static readonly TOKEN_PATH_CONTENT_FORM_SCHEMA_PROPERTIES = "content.application/x-www-form-urlencoded.schema.properties";
 
-    private static readonly TOKEN_PATH_MAP = new Map<ProtocolType, string>([
-        [ProtocolType.REQUEST_BODY, RequestBody.TOKEN_PATH_CONTENT_JSON_SCHEMA_PROPERTIES],
-        [ProtocolType.URL_ENCODED, RequestBody.TOKEN_PATH_CONTENT_FORM_SCHEMA_PROPERTIES],
-        [ProtocolType.PARAMETERS, RequestBody.TOKEN_PATH_CONTENT_FORM_SCHEMA_PROPERTIES]
-    ] as [ProtocolType, string][]);
+    private static readonly CONTENT_TYPE_MAP = new Map<ProtocolType, ContentType>([
+        [ProtocolType.REQUEST_BODY, ContentType.APPLICATION_JSON],
+        [ProtocolType.URL_ENCODED, ContentType.APPLICATION_X_WWW_FORM_URLENCODED],
+    ] as [ProtocolType, ContentType][]);
 
     private readonly _contentType: string;
     private readonly _fields: Array<IField>;
@@ -34,8 +34,12 @@ export default class RequestBody implements IParsable {
     }
 
 
-    public static findTokenPath(protocolType: ProtocolType): string | undefined {
-        return this.TOKEN_PATH_MAP.get(protocolType);
+    public static findContentType(protocolType: ProtocolType): ContentType {
+        const contentType = this.CONTENT_TYPE_MAP.get(protocolType);
+        if (!contentType) {
+            throw new Error(`Not supported protocol type: ${protocolType}`);
+        }
+        return contentType;
     }
 
     toJSON() {

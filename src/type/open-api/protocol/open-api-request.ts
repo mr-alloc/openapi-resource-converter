@@ -1,4 +1,4 @@
-import HttpMethod from "@/type/open-api/constant/HttpMethod";
+import HttpMethod from "@/type/open-api/constant/http-method";
 import {Property, toProps} from "@/util/object-util";
 import ProtocolType from "@/type/open-api/constant/protocol-type";
 import Path from "@/type/Path";
@@ -36,7 +36,7 @@ export default class OpenApiRequest {
     get metadataProtocols(): Array<ProtocolType> {
         //meta는 summary, operationId, requestBody, parameters, responses로 구성
         return this._metadata.map((prop) => prop.name)
-            .filter((name) => ProtocolType.hasValue(name))
+            .filter((name) => ProtocolType.isProtocolFormat(name))
             .map((name) => ProtocolType.fromValue(name)!);
     }
 
@@ -48,10 +48,10 @@ export default class OpenApiRequest {
         );
     }
 
-    public metadataOf(protocol: ProtocolType): Array<Property> {
+    public metadataOf(protocol: ProtocolType): Property {
         const found = this._metadata.find((prop) => prop.name === protocol.value);
         if (found) {
-            return toProps(found.value) ?? [];
+            return found;
         }
 
         throw new Error(`Not found metadata with protocol: ${protocol.value}`);

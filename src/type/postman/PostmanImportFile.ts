@@ -1,7 +1,8 @@
 import PostmanInfo from "@/type/postman/PostmanInfo";
 import IPostmanNode from "@/type/postman/IPostmanNode";
+import {IConvertOutput} from "@/converter/constant/i-convert-output";
 
-export default class PostmanImportFile {
+export default class PostmanImportFile implements IConvertOutput{
     private readonly _info: PostmanInfo;
     private readonly _nodes: Array<IPostmanNode>;
 

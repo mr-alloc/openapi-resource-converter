@@ -1,0 +1,53 @@
+postman:
+  host: {{url}}
+  exclude-path:
+    - /
+    - /error
+    - /internal/**
+  header:
+    - Content-Type: application/json
+  case: camel
+  place-holder:
+    - camelCase: {{camel}}
+    - PascalCase: {{pascal}}
+    - Upper-Snake-Case: {{only_camelCase_or_snake_case}}
+  default-request:
+    # json
+    - path: /api/v1/**
+      type: body
+      format: |
+        {
+          "id": {{id}},
+          "app": "{{version}}",
+          "message": ${body}
+        }
+    - path: /api/v2/**
+      type: body
+      format: |
+        {
+          "num": 1,
+          "id": {{id}},
+          "storeCode": "{{version}}",
+          "countryCode": "{{countryCode}}",
+          "message": ${body}
+        }
+    - path: /api/v3/**
+      type: formdata
+      values:
+        - name: token
+          description: 인증토큰
+          type: string
+          value: {{token}}
+        - name: timestamp
+          description: 클라이언트 시간
+          type: number
+          value: {{timestamp}}
+        - name: isAdult
+          description: 성인여부
+          type: boolean
+          value: {{isAdult}}
+
+
+
+
+

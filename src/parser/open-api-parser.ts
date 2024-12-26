@@ -1,6 +1,5 @@
-import fs from "fs";
 import {notExist, readFile} from "@/util/file-util";
-import {isJson, toJson} from "@/util/string-util";
+import {toJson} from "@/util/string-util";
 import Version from "@/type/open-api/sub/Version";
 import ProjectInformation from "@/type/open-api/project/project-information";
 import Tag from "@/type/open-api/sub/Tag";
@@ -16,7 +15,7 @@ import IField from "@/type/open-api/sub/i-field";
 
 
 
-export class OpenApiParser {
+export default class OpenApiParser {
 
     private readonly _version: Version;
     private readonly _info: ProjectInformation;
@@ -28,6 +27,8 @@ export class OpenApiParser {
         if (notExist(filePath))
             throw new Error(`Not found file with path: ${filePath}`);
         const json = toJson(readFile(filePath, encoding));
+
+        new Map
 
         this._version = Version.parse(json.openapi);
         this._info = ProjectInformation.parse(json.info);
@@ -91,15 +92,13 @@ export class OpenApiParser {
 
             //요청내 요청값 별로 (request body, parameters, form data...)
             for (const protocol of request.metadataProtocols) {
-                const metaDataValues = request.metadataOf(protocol);
-                const adapter = ParserFactory.getInstance().getParser(protocol);
-                if (! adapter) continue;
+                const metadata = request.metadataOf(protocol);
+                const parser = ParserFactory.getInstance().getParser(protocol);
+                if (! parser) continue;
 
                 //각 토큰 별로 (요청값 별로 토큰이 나눠져 있음으로 한번 더 반복이 필요없음
-                const tokenPath = adapter.getTokenPath(protocol);
-                if (checkPath(metaDataValues, tokenPath)) {
-                    bodies.push(adapter.parse(metaDataValues, tokenPath));
-                }
+                const parsable = parser.parse(metadata, protocol, this._components);
+                bodies.push(parsable);
             }
 
             //요청 파라미터 정보가 없어도, 빈 요청을 생성한다.

@@ -2,7 +2,7 @@ import DataType from "@/type/open-api/constant/data-type";
 import DataFormat from "@/type/open-api/constant/data-format";
 import IField from "@/type/open-api/sub/i-field";
 import {getProp, getPropOrDefault, Property} from "@/util/object-util";
-import NamedLiteral from "@/type/open-api/constant/NamedLiteral";
+import NamedLiteral from "@/type/open-api/constant/named-literal";
 
 export default class ValueField implements IField {
 
