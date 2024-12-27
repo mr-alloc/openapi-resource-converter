@@ -1,4 +1,4 @@
-import APISpecification from "@/type/open-api/APISpecification";
+import ApiSpecification from "@/type/open-api/api-specification";
 
 export default interface APISpecificationIParsable {
 

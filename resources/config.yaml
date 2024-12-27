@@ -1,16 +1,19 @@
 postman:
-  host: {{url}}
+  host: "{{url}}"
+  case: snake
   exclude-path:
     - /
     - /error
-    - /internal/**
-  header:
-    - Content-Type: application/json
-  case: camel
-  place-holder:
-    - camelCase: {{camel}}
-    - PascalCase: {{pascal}}
-    - Upper-Snake-Case: {{only_camelCase_or_snake_case}}
+  headers:
+    Content-Type: application/json
+    Content-Length: 0
+  placeholders:
+    camelCase:
+      type: string
+      value: camel
+    id:
+      type: number
+      value: uid
   default-request:
     # json
     - path: /api/v1/**
@@ -37,15 +40,15 @@ postman:
         - name: token
           description: 인증토큰
           type: string
-          value: {{token}}
+          value: "{{token}}"
         - name: timestamp
           description: 클라이언트 시간
           type: number
-          value: {{timestamp}}
+          value: "{{timestamp}}"
         - name: isAdult
           description: 성인여부
           type: boolean
-          value: {{isAdult}}
+          value: "{{isAdult}}"
 
 
 

@@ -1,3 +1,5 @@
+import {minimatch} from "minimatch";
+
 export default class Path {
 
     private readonly _value: string
@@ -35,5 +37,13 @@ export default class Path {
 
     lastValue() {
         return this._array[this._array.length - 1];
+    }
+
+    public matches(path: Path): boolean {
+        return minimatch(this._value, path.value)
+    }
+
+    public toString() {
+        return this._value;
     }
 }

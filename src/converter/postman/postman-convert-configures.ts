@@ -1,18 +1,20 @@
-import PostmanHeader from "@/type/postman/PostmanHeader";
-import IPostmanRequestBody from "@/type/postman/IPostmanRequestBody";
+import PostmanHeader from "@/type/postman/postman-header";
+import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import CaseMode from "@/type/postman/constant/CaseMode";
-import Path from "@/type/Path";
+import Path from "@/type/path";
 import HttpMethod from "@/type/open-api/constant/http-method";
 import Parameter from "@/type/open-api/sub/Parameter";
+import TypeValue from "@/type/postman/type-value";
+import ParsedPostmanOption from "@/type/postman/parsed-postman-option";
 
 export default class PostmanConvertConfigures {
 
-    private _excludePaths: Array<string>;
+    private _excludePaths: Array<Path>;
     private _host: string;
     private _headers: Array<PostmanHeader>;
     private _casingMode: CaseMode;
     private _defaultBodyWrapper: ((path: Path, method: HttpMethod, body: IPostmanRequestBody) => IPostmanRequestBody) | undefined;
-    private _valuePlaceholder = new Map<string, any>;
+    private _valuePlaceholder = new Map<string, TypeValue>;
 
     constructor() {
         this._excludePaths = [];
@@ -21,7 +23,7 @@ export default class PostmanConvertConfigures {
         this._casingMode = CaseMode.CAMEL;
     }
 
-    get excludePaths(): Array<string> {
+    get excludePaths(): Array<Path> {
         return this._excludePaths;
     }
 
@@ -53,7 +55,7 @@ export default class PostmanConvertConfigures {
         return this;
     }
 
-    addExcludePaths(paths: Array<string>) {
+    addExcludePaths(paths: Array<Path>) {
         this._excludePaths = paths;
         return this;
     }
@@ -69,5 +71,13 @@ export default class PostmanConvertConfigures {
             return this._defaultBodyWrapper(path, method, body);
         }
         return body as IPostmanRequestBody;
+    }
+
+    public applyPostmanOption(parsedPostmanOption: ParsedPostmanOption) {
+        this._host = parsedPostmanOption.host;
+        this._excludePaths = parsedPostmanOption.excludePath;
+        this._headers = parsedPostmanOption.headers;
+        this._casingMode = parsedPostmanOption.caseMode;
+        this._valuePlaceholder = parsedPostmanOption.placeholders;
     }
 }

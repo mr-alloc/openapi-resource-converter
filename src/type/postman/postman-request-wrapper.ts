@@ -1,5 +1,5 @@
-import IPostmanNode from "@/type/postman/IPostmanNode";
-import PostmanRequest from "@/type/postman/PostmanRequest";
+import IPostmanNode from "@/type/postman/i-postman-node";
+import PostmanRequest from "@/type/postman/postman-request";
 
 export default class PostmanRequestWrapper implements IPostmanNode {
     private readonly _name: string;

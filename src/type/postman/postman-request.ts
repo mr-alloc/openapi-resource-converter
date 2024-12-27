@@ -1,6 +1,6 @@
-import PostmanHeader from "@/type/postman/PostmanHeader";
-import PostmanUrl from "@/type/postman/PostmanUrl";
-import PostmanBodyWrapper from "@/type/postman/PostmanBodyWrapper";
+import PostmanHeader from "@/type/postman/postman-header";
+import PostmanUrl from "@/type/postman/postman-url";
+import PostmanBodyWrapper from "@/type/postman/postman-body-wrapper";
 import HttpMethod from "@/type/open-api/constant/http-method";
 
 export default class PostmanRequest {

@@ -19,4 +19,8 @@ export default class PostmanHeader {
             "value": this._value
         }
     }
+
+    public toString() {
+        return `${this._key}: ${this._value}`;
+    }
 }

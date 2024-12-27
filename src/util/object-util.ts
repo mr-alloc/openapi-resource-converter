@@ -90,6 +90,10 @@ export class Property {
         return this._value;
     }
 
+    public getTypeValue<T>(): T {
+        return this._value as T;
+    }
+
     public toString(): string {
         return `${this._name}: ${JSON.stringify(this._value)}`;
     }

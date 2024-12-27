@@ -1,15 +1,15 @@
 import {notExist, readFile} from "@/util/file-util";
 import {toJson} from "@/util/string-util";
-import Version from "@/type/open-api/sub/Version";
+import Version from "@/type/open-api/sub/version";
 import ProjectInformation from "@/type/open-api/project/project-information";
 import Tag from "@/type/open-api/sub/Tag";
 import {checkPath, Property, toProps} from "@/util/object-util";
 import OpenApiRequest from "@/type/open-api/protocol/open-api-request";
 import IParsable from "@/type/open-api/protocol/i-parsable";
-import APISpecification from "@/type/open-api/APISpecification";
+import ApiSpecification from "@/type/open-api/api-specification";
 import ParserFactory from "@/parser/parser-factory";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
-import OpenAPISpecification from "@/type/open-api/OpenAPISpecification";
+import OpenApiSpecification from "@/type/open-api/open-api-specification";
 import ComponentParser from "@/parser/component-parser";
 import IField from "@/type/open-api/sub/i-field";
 
@@ -37,11 +37,11 @@ export default class OpenApiParser {
         this._paths = toProps(json.paths);
     }
 
-    public parse(): OpenAPISpecification {
+    public parse(): OpenApiSpecification {
         const requests = this.parseToRequests(this._paths);
         const specs = this.parseToSpecs(requests);
 
-        return new OpenAPISpecification(this._version, this._info, this._tags, specs);
+        return new OpenApiSpecification(this._version, this._info, this._tags, specs);
     }
 
     /*
@@ -83,8 +83,8 @@ export default class OpenApiParser {
         return result;
     }
 
-    private parseToSpecs(requests: Array<OpenApiRequest>): Array<APISpecification> {
-        const specs = new Array<APISpecification>();
+    private parseToSpecs(requests: Array<OpenApiRequest>): Array<ApiSpecification> {
+        const specs = new Array<ApiSpecification>();
         //각 요청별로
         for (const request of requests) {
             const summary = request.summary;
@@ -102,7 +102,7 @@ export default class OpenApiParser {
             }
 
             //요청 파라미터 정보가 없어도, 빈 요청을 생성한다.
-            specs.push(new APISpecification(
+            specs.push(new ApiSpecification(
                 request.method,
                 request.path,
                 summary,

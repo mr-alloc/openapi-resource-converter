@@ -1,16 +1,16 @@
-import Version from "@/type/open-api/sub/Version";
 import ProjectInformation from "@/type/open-api/project/project-information";
 import Tag from "@/type/open-api/sub/Tag";
-import APISpecification from "@/type/open-api/APISpecification";
+import ApiSpecification from "@/type/open-api/api-specification";
+import Version from "@/type/open-api/sub/version";
 
-export default class  OpenAPISpecification {
+export default class OpenApiSpecification {
 
     private readonly _version: Version;
     private readonly _info: ProjectInformation;
     private readonly _tags: Array<Tag>
-    private readonly _specs: Array<APISpecification>;
+    private readonly _specs: Array<ApiSpecification>;
 
-    constructor(version: Version, info: ProjectInformation, tags: Array<Tag>, specs: Array<APISpecification>) {
+    constructor(version: Version, info: ProjectInformation, tags: Array<Tag>, specs: Array<ApiSpecification>) {
         this._version = version;
         this._info = info;
         this._tags = tags;
@@ -29,7 +29,7 @@ export default class  OpenAPISpecification {
         return this._tags;
     }
 
-    get specs(): Array<APISpecification> {
+    get specs(): Array<ApiSpecification> {
         return this._specs;
     }
 
