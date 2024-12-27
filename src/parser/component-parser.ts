@@ -3,8 +3,8 @@ import IField from "@/type/open-api/sub/i-field";
 import {getProp, getProps, hasProp, Property, toProps} from "@/util/object-util";
 import {toMap, toValueMap} from "@/util/collection-util";
 import DataType from "@/type/open-api/constant/data-type";
-import ValueField from "@/type/open-api/sub/ValueField";
-import ObjectField from "@/type/open-api/sub/ObjectField";
+import ValueField from "@/type/open-api/sub/value-field";
+import ObjectField from "@/type/open-api/sub/object-field";
 
 export default class ComponentParser {
 

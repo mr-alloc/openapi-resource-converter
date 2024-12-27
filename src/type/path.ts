@@ -40,7 +40,7 @@ export default class Path {
     }
 
     public matches(path: Path): boolean {
-        return minimatch(this._value, path.value)
+        return minimatch(path.value, this._value);
     }
 
     public toString() {

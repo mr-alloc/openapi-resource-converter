@@ -3,9 +3,11 @@ import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import CaseMode from "@/type/postman/constant/CaseMode";
 import Path from "@/type/path";
 import HttpMethod from "@/type/open-api/constant/http-method";
-import Parameter from "@/type/open-api/sub/Parameter";
+import Parameter from "@/type/open-api/sub/parameter";
 import TypeValue from "@/type/postman/type-value";
 import ParsedPostmanOption from "@/type/postman/parsed-postman-option";
+import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrapper-template";
+import RequestMode from "@/type/postman/constant/RequestMode";
 
 export default class PostmanConvertConfigures {
 
@@ -13,14 +15,16 @@ export default class PostmanConvertConfigures {
     private _host: string;
     private _headers: Array<PostmanHeader>;
     private _casingMode: CaseMode;
-    private _defaultBodyWrapper: ((path: Path, method: HttpMethod, body: IPostmanRequestBody) => IPostmanRequestBody) | undefined;
-    private _valuePlaceholder = new Map<string, TypeValue>;
+    private _defaultRequestWrappers: Array<PostmanRequestWrapperTemplate>;
+    private _valuePlaceholder: Map<string, TypeValue>;
 
-    constructor() {
+    public constructor() {
         this._excludePaths = [];
         this._host = 'localhost';
         this._headers = [];
         this._casingMode = CaseMode.CAMEL;
+        this._defaultRequestWrappers = [];
+        this._valuePlaceholder = new Map<string, TypeValue>();
     }
 
     get excludePaths(): Array<Path> {
@@ -43,34 +47,23 @@ export default class PostmanConvertConfigures {
         return this._valuePlaceholder;
     }
 
-    defaultBodyWrapper(value: (path: Path, method: HttpMethod, body: IPostmanRequestBody) => IPostmanRequestBody | Array<Parameter>) {
-        this._defaultBodyWrapper = value;
-        return this;
-    }
+    public wrappingBody(path: Path, body: IPostmanRequestBody): IPostmanRequestBody {
+        const found = this._defaultRequestWrappers.find(template =>
+            template.type.equalsValue(RequestMode.RAW) && template.path.matches(path));
 
-    addPlaceholders(placeholders: Map<string, any>) {
-        placeholders.forEach((value, key) => {
-            this._valuePlaceholder.set(CaseMode.to(key, this.casingMode), value);
-        });
-        return this;
-    }
-
-    addExcludePaths(paths: Array<Path>) {
-        this._excludePaths = paths;
-        return this;
-    }
-
-    addHeaders(headers: Array<PostmanHeader>) {
-        this._headers = headers;
-        return this;
-
-    }
-
-    wrappingBody(path: Path, method: HttpMethod, body: IPostmanRequestBody): IPostmanRequestBody {
-        if (this._defaultBodyWrapper) {
-            return this._defaultBodyWrapper(path, method, body);
+        if (found) {
+            return found.format(body);
         }
         return body as IPostmanRequestBody;
+    }
+
+    public getDefaultParameters(path: Path): Array<Parameter> {
+        const found = this._defaultRequestWrappers.find(template =>
+            template.type.equalsValue(RequestMode.FORMDATA) && template.path.matches(path));
+        if (found) {
+            return found.values;
+        }
+        return [];
     }
 
     public applyPostmanOption(parsedPostmanOption: ParsedPostmanOption) {
@@ -79,5 +72,6 @@ export default class PostmanConvertConfigures {
         this._headers = parsedPostmanOption.headers;
         this._casingMode = parsedPostmanOption.caseMode;
         this._valuePlaceholder = parsedPostmanOption.placeholders;
+        this._defaultRequestWrappers = parsedPostmanOption.templates;
     }
 }

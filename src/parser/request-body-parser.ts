@@ -1,11 +1,11 @@
 import IParser from "@/parser/i-parser";
 import RequestBody from "@/type/open-api/protocol/request-body";
 import NamedLiteral from "@/type/open-api/constant/named-literal";
-import ValueField from "@/type/open-api/sub/ValueField";
+import ValueField from "@/type/open-api/sub/value-field";
 import DataType from "@/type/open-api/constant/data-type";
 import DataFormat from "@/type/open-api/constant/data-format";
 import IField from "@/type/open-api/sub/i-field";
-import ObjectField from "@/type/open-api/sub/ObjectField";
+import ObjectField from "@/type/open-api/sub/object-field";
 import ProtocolType from "@/type/open-api/constant/protocol-type";
 import {getProp, getPropOrDefault, getProps, hasProp, Property} from "@/util/object-util";
 

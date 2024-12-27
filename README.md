@@ -1,6 +1,6 @@
 ## Summary
 
-This project is a library for generating **OpenAPI 3.0** specification from a TypeScript project.
+이 프로젝트는 Open API 3.0 스펙을 여러 데이터 형태로 변환할 수 있는 라이브러리 입니다.
 
 ---
 
@@ -13,34 +13,96 @@ git clone https://github.com/mr-alloc/openapi-resource-converter.git
 cd openapi-resource-converter
 
 # 의존성 설치
-npm install
+npm install # or yarn install
 
-# 개발 의존성 설치 (ts-node, tsconfig-paths 등)
-npm install --save-dev typescript ts-node tsconfig-paths @types/node
 
 # Typescript 컴파일
-npm run build
+npm run build # or yarn build
 
 # bin 설정을 위한 권한부여
 chmod +x dist/index.js
 
 # 전역 설치
-npm link
+npm link # or yarn link
 
 # 명령어 실행
-orc postman
+orc postman -f <openapi json file path> -o <output file path>
+
+#링크가 잘못 적용 된 경우 링크 삭제
+npm unlink -g orc # or yarn unlink -g orc
 ```
 
-## 실행
-```shell
+## 옵션
 
-yarn convert postman --file /your/file/path
+### postman
+
+postman 명령어는 OpenAPI 3.0 스펙을 Postman Collection v2.1 스펙으로 변환합니다.
+
+* -f, --file : OpenAPI 3.0 스펙 JSON 파일 경로 (필수)
+* -o, --output : 변환된 JSON 파일 경로 (필수)
+* -c, --config : 변환 설정(yaml) 파일 경로 (선택)
+
+포스트맨 컬렉션 변환 설정 파일은 다음과 같은 형식으로 작성합니다.
+
+```yaml
+postman:
+  ...
 ```
 
-## Usage
-This library is designed to be used in a TypeScript project. The following steps are required to generate an OpenAPI 3.0 specification.
-1. Put openapi.json into resources dir in the root of the project.
-2. Use ts module of converter like below:
+*호스트 지정*
+포스트맨 요청생성시 사용할 호스트를 지정합니다.
+```yaml
+postman:
+  host: "http://{{url}}" # 기본값: "{{url}}"
+```
+
+*파라미터 키 케이스 설정*
+파라미터 키의 케이스를 설정합니다.
+사용 가능값: [`camel`, `snake`]
+```yaml
+postman:
+  case: snake # 기본값: camel
+```
+
+*제외 경로 설정*
+변환에서 제외할 경로를 설정합니다.
+```yaml
+postman:
+  excludePaths:
+    - "/foo/*/move"
+    - "/bar/internal/**"
+    - "/"
+```
+
+*기본 헤더 추가*
+모든 요청에 추가할 기본 헤더를 설정합니다.
+```yaml
+postman:
+  headers:
+    Authorization: "Bearer {{token}}"
+    Content-Type: application/json
+```
+
+*플레이스홀더 설정*
+변환된 요청에 사용할 플레이스홀더를 설정합니다.
+포맷은 타입에따라 자동으로 적용됩니다.
+```yaml
+postman:
+  placeholders:
+    userId: "uid"
+```
+결과:
+```text
+{
+  "userId": {{uid}}, // 숫자형인 경우
+  "userId": "{{uid}}" // 문자열인 경우
+}
+```
+
+
+
+## 사용법
+
 ```typescript
 import OpenApiParser from "@/parser/OpenApiParser";
 import PostmanCollectionConverter from "@/converter/postman/PostmanCollectionConverter";
