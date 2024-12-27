@@ -17,19 +17,20 @@ import RequestBody from "@/type/open-api/protocol/request-body";
 import PostmanBodyWrapper from "@/type/postman/postman-body-wrapper";
 import Formdata from "@/type/open-api/protocol/formdata";
 import PostmanFormdata from "@/type/postman/postman-formdata";
-import Tag from "@/type/open-api/sub/Tag";
+import Tag from "@/type/open-api/sub/tag";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import IField from "@/type/open-api/sub/i-field";
-import ObjectField from "@/type/open-api/sub/ObjectField";
+import ObjectField from "@/type/open-api/sub/object-field";
 import DefaultValue from "@/type/postman/constant/DefaultValue";
 import DefaultField from "@/type/postman/constant/DefaultValue";
-import ValueField from "@/type/open-api/sub/ValueField";
+import ValueField from "@/type/open-api/sub/value-field";
 import CaseMode from "@/type/postman/constant/CaseMode";
-import Parameter from "@/type/open-api/sub/Parameter";
+import Parameter from "@/type/open-api/sub/parameter";
 import HttpMethod from "@/type/open-api/constant/http-method";
 import InType from "@/type/open-api/constant/in-type";
 import PostmanHeader from "@/type/postman/postman-header";
+import RequestMode from "@/type/postman/constant/RequestMode";
 
 export default class PostmanCollectionConverter implements IOpenapiConverter {
 
@@ -137,18 +138,18 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         if (parsable instanceof RequestBody) {
             const requestBody = parsable as RequestBody;
             let rawBody = this.toPostmanRawBody(requestBody.fields);
-            const wrappedBody = this._configures.wrappingBody(path, method, rawBody);
+            const wrappedBody = this._configures.wrappingBody(path, rawBody);
             return PostmanBodyWrapper.fromRaw(wrappedBody);
         } else if (parsable instanceof Formdata) {
             const formdata = parsable as Formdata;
-            const parameters = formdata.parameters;
+            const parameters = [...formdata.parameters, ...this._configures.getDefaultParameters(path)];
             const data = parameters.filter(param => param.in.value !== InType.HEADER.value).map(this.toPostmanFormData);
             const headers = parameters.filter(param => param.in.value === InType.HEADER.value);
             const bodyWrapper = PostmanBodyWrapper.fromFormData(data);
             bodyWrapper.headers = headers.map(header => new PostmanHeader(header.name, DefaultField.fromTypeFormat(header.type, header.format).value))
             return bodyWrapper;
         } else if (parsable instanceof EmptyBody) {
-            const defaultBody = this._configures.wrappingBody(path, method, {});
+            const defaultBody = this._configures.wrappingBody(path, {});
             return Array.isArray(defaultBody)
                 ? PostmanBodyWrapper.fromFormData(defaultBody.map(this.toPostmanFormData))
                 : PostmanBodyWrapper.fromRaw(defaultBody);

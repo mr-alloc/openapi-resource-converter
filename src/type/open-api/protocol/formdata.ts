@@ -1,4 +1,4 @@
-import Parameter from "@/type/open-api/sub/Parameter";
+import Parameter from "@/type/open-api/sub/parameter";
 import IParsable from "@/type/open-api/protocol/i-parsable";
 import InType from "@/type/open-api/constant/in-type";
 

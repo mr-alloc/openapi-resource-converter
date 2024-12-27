@@ -10,17 +10,21 @@ import PostmanCollectionConverter from "@/converter/postman/postman-collection-c
 
 export default class PostmanCommandBuilder {
 
-    private _configures: PostmanConvertConfigures;
-    private _openAPI?: OpenApiSpecification;
-    private _option: CommandOption;
+    private readonly _configures: PostmanConvertConfigures;
+    private readonly _option: CommandOption;
 
     private _existConfig: boolean = false;
 
-    public  constructor(option: CommandOption) {
+    public constructor(option: CommandOption) {
         this._configures = new PostmanConvertConfigures();
         this._option = option
-        this.applyFileOption();
+
         this.applyConfigOption();
+        if (option.lint === true) {
+            console.log('Lint Mode')
+            return;
+        }
+        this.applyFileOption();
         this.applyOutputOption();
     }
 
@@ -45,6 +49,7 @@ export default class PostmanCommandBuilder {
         if (notExist(configYamlPath!)) {
             throw new Error('Invalid config file path:'+ configYamlPath);
         }
+
         this._existConfig = true;
         return this;
     }
@@ -63,9 +68,14 @@ export default class PostmanCommandBuilder {
             return;
         }
 
-        const configParser = new PostmanConfigParser();
         const yaml = readFile(this._option.config!);
+        const configParser = new PostmanConfigParser();
         const parsedPostmanOption = configParser.parse(yaml);
+
+        if (this._option.lint === true) {
+            parsedPostmanOption.printStatus();
+            return;
+        }
 
         this._configures.applyPostmanOption(parsedPostmanOption);
 

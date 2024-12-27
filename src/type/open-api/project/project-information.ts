@@ -1,4 +1,4 @@
-import Contact from "@/type/open-api/project/Contact";
+import Contact from "@/type/open-api/project/contact";
 
 export default class ProjectInformation {
 

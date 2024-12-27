@@ -1,3 +1,6 @@
+#!/usr/bin/env node
+import 'module-alias/register';
+
 import {readFile} from "@/util/file-util";
 import {Command} from "commander";
 import ComponentParser from "@/parser/component-parser";
@@ -28,26 +31,20 @@ program
 program
     .command('postman')
     .description('convert openapi to postman')
-    .requiredOption('-f, --file <openapi-file-path>', 'openapi.json 파일 경로는 필수입니다.(this file path is required)')
-    .requiredOption('-o, --output <output-file-path>', '변환된 파일 저장경로.(to be saved output file path)')
+    .option('-f, --file <openapi-file-path>', 'openapi.json 파일 경로(openapi.json file path)')
+    .option('-o, --output <output-file-path>', '변환된 파일 저장 경로.(to be saved output file path)')
+    .option('-l, --lint', '설정파일을 검증합니다.(validate the configuration file)', false)
     .option('-c, --config <config-file-path>', '설정파일 경로 지정 (set the configuration yaml file path)')
     .action((option: CommandOption) => {
         try {
             const commandBuilder = new PostmanCommandBuilder(option);
-            commandBuilder.execute()
-
-            // const openApiParser = new OpenApiParser('/resources/openapi.json', 'utf-8');
-            // const specification = openApiParser.parse();
-            //
-            // const configuration = new PostmanConvertConfiguration('{{url}}', CaseMode.SNAKE);
-            // const converter = new PostmanCollectionConverter(specification, configuration);
-            //
-            // const output = converter.convert();
-            // refreshFile(postmanFilePath, JSON.stringify(output));
+            commandBuilder.execute();
         } catch (error) {
             console.error('Error Occurred with command postman:', error)
             process.exit(1);
         }
     });
+
+program
 
 program.parse(process.argv);

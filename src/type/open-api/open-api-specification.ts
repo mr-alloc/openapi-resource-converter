@@ -1,5 +1,5 @@
 import ProjectInformation from "@/type/open-api/project/project-information";
-import Tag from "@/type/open-api/sub/Tag";
+import Tag from "@/type/open-api/sub/tag";
 import ApiSpecification from "@/type/open-api/api-specification";
 import Version from "@/type/open-api/sub/version";
 

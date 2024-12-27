@@ -19,7 +19,19 @@ export default class RequestMode {
         return this._value;
     }
 
-    static fromProtocol(protocol: ProtocolType): RequestMode {
+    get isNone(): boolean {
+        return this._value === RequestMode.NONE._value;
+    }
+
+    public static fromProtocol(protocol: ProtocolType): RequestMode {
         return [RequestMode.RAW, RequestMode.FORMDATA, RequestMode.URL_ENCODED].find(mode => mode._protocol === protocol) ?? RequestMode.NONE;
+    }
+
+    public static fromValue(value: string): RequestMode {
+        return [RequestMode.RAW, RequestMode.FORMDATA, RequestMode.URL_ENCODED].find(mode => mode.value === value) ??RequestMode.NONE;
+    }
+
+    equalsValue(other: RequestMode) {
+        return this._value === other._value;
     }
 }

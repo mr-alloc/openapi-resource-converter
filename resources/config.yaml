@@ -6,18 +6,25 @@ postman:
     - /error
   headers:
     Content-Type: application/json
-    Content-Length: 0
   placeholders:
-    camelCase:
+    store_type:
       type: string
-      value: camel
-    id:
-      type: number
-      value: uid
-  default-request:
+      value: store_type
+  request-wrapper:
     # json
+    - path: /api/**
+      type: raw
+      format: |
+          {
+            "ssn": {{ssn}},
+            "gsn": {{gsn}},
+            "session_info": {
+              "usn": {{usn}}
+            },
+            "enveloped_message": ${body}
+          }
     - path: /api/v1/**
-      type: body
+      type: raw
       format: |
         {
           "id": {{id}},
@@ -25,7 +32,7 @@ postman:
           "message": ${body}
         }
     - path: /api/v2/**
-      type: body
+      type: raw
       format: |
         {
           "num": 1,

@@ -1,4 +1,4 @@
-import Parameter from "@/type/open-api/sub/Parameter";
+import Parameter from "@/type/open-api/sub/parameter";
 import {getPropOrDefault, getPropRecursive} from "@/util/object-util";
 import InType from "@/type/open-api/constant/in-type";
 import DataType from "@/type/open-api/constant/data-type";

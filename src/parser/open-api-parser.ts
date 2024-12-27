@@ -2,7 +2,7 @@ import {notExist, readFile} from "@/util/file-util";
 import {toJson} from "@/util/string-util";
 import Version from "@/type/open-api/sub/version";
 import ProjectInformation from "@/type/open-api/project/project-information";
-import Tag from "@/type/open-api/sub/Tag";
+import Tag from "@/type/open-api/sub/tag";
 import {checkPath, Property, toProps} from "@/util/object-util";
 import OpenApiRequest from "@/type/open-api/protocol/open-api-request";
 import IParsable from "@/type/open-api/protocol/i-parsable";

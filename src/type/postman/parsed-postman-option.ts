@@ -2,6 +2,7 @@ import CaseMode from "@/type/postman/constant/CaseMode";
 import PostmanHeader from "@/type/postman/postman-header";
 import TypeValue from "@/type/postman/type-value";
 import Path from "@/type/path";
+import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrapper-template";
 
 export default class ParsedPostmanOption {
 
@@ -10,13 +11,22 @@ export default class ParsedPostmanOption {
     private readonly _headers: Array<PostmanHeader>;
     private readonly _caseMode: CaseMode;
     private readonly _placeholders: Map<string, TypeValue>;
+    private readonly _templates: Array<PostmanRequestWrapperTemplate>;
 
-    public constructor(host: string, excludePath: Array<Path>, headers: Array<PostmanHeader>, caseMode: CaseMode, placeholders: Map<string, TypeValue>) {
+    public constructor(
+        host: string,
+        excludePath: Array<Path>,
+        headers: Array<PostmanHeader>,
+        caseMode: CaseMode,
+        placeholders: Map<string, TypeValue>,
+        templates: Array<PostmanRequestWrapperTemplate>
+    ) {
         this._host = host;
         this._excludePath = excludePath;
         this._headers = headers;
         this._caseMode = caseMode;
         this._placeholders = placeholders;
+        this._templates = templates;
     }
 
 
@@ -40,7 +50,20 @@ export default class ParsedPostmanOption {
         return this._placeholders;
     }
 
+    get templates(): Array<PostmanRequestWrapperTemplate> {
+        return this._templates;
+    }
+
     public static ofDefault(): ParsedPostmanOption {
-        return new ParsedPostmanOption('localhost', [], [], CaseMode.SNAKE, new Map<string, TypeValue>());
+        return new ParsedPostmanOption('localhost', [], [], CaseMode.SNAKE, new Map<string, TypeValue>(), []);
+    }
+
+    public printStatus() {
+        //pretty print
+        console.log('host:', this._host);
+        console.log('excludePath:', this._excludePath);
+        console.log('headers:', this._headers);
+        console.log('caseMode:', this._caseMode);
+        console.log('placeholders:', this._placeholders);
     }
 }
