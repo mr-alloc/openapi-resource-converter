@@ -1,21 +1,20 @@
 import fs from "fs";
-const baseDir = process.cwd();
 export function notExist(path: string): boolean {
-    return !fs.existsSync(baseDir + path);
+    return !fs.existsSync(path);
 }
 
 export function readFile(path: string, encoding: BufferEncoding = 'utf-8'): string {
-    return fs.readFileSync(baseDir + path, encoding);
+    return fs.readFileSync(path, encoding);
 }
 
 export function removeFile(path: string) {
-    fs.rmSync(baseDir + path, {
+    fs.rmSync(path, {
         force: true
     });
 }
 
 export function writeFile(path: string, content: string) {
-    fs.writeFileSync(baseDir + path, content, {
+    fs.writeFileSync(path, content, {
         encoding: 'utf-8'
     });
 }

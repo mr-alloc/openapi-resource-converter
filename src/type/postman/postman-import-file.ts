@@ -1,5 +1,5 @@
-import PostmanInfo from "@/type/postman/PostmanInfo";
-import IPostmanNode from "@/type/postman/IPostmanNode";
+import PostmanInfo from "@/type/postman/postman-info";
+import IPostmanNode from "@/type/postman/i-postman-node";
 import {IConvertOutput} from "@/converter/constant/i-convert-output";
 
 export default class PostmanImportFile implements IConvertOutput{

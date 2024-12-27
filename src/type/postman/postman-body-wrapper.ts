@@ -1,9 +1,9 @@
-import PostmanFormData from "@/type/postman/PostmanFormData";
-import PostmanOptions from "@/type/postman/PostmanOptions";
+import PostmanFormdata from "@/type/postman/postman-formdata";
+import PostmanOptions from "@/type/postman/postman-options";
 import RequestMode from "@/type/postman/constant/RequestMode";
-import IPostmanRequestBody from "@/type/postman/IPostmanRequestBody";
-import {PostmanRequestBody} from "@/type/postman/PostmanRequestBody";
-import PostmanHeader from "@/type/postman/PostmanHeader";
+import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
+import {PostmanRequestBody} from "@/type/postman/postman-request-body";
+import PostmanHeader from "@/type/postman/postman-header";
 
 export default class PostmanBodyWrapper {
 
@@ -32,7 +32,7 @@ export default class PostmanBodyWrapper {
         } as unknown as {
             mode: string,
             options: PostmanOptions,
-            formdata?: Array<PostmanFormData>,
+            formdata?: Array<PostmanFormdata>,
             raw?: string
         }
         if (Array.isArray(this._data)) {
@@ -46,7 +46,7 @@ export default class PostmanBodyWrapper {
         return wrapper;
     }
 
-    static fromFormData(data: Array<PostmanFormData>) {
+    static fromFormData(data: Array<PostmanFormdata>) {
         return new PostmanBodyWrapper(RequestMode.FORMDATA.value, data);
     }
 

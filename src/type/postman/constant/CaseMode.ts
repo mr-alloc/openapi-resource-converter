@@ -1,30 +1,35 @@
 export default class CaseMode {
 
 
-    static readonly CAMEL = new CaseMode(0, /^[a-z]+(?:[A-Z][a-z]+)*$/gm,
+    static readonly CAMEL = new CaseMode('camel', /^[a-z]+(?:[A-Z][a-z]+)*$/gm,
         /([A-Z])/gm, (value) => value.toLowerCase(),
         (value) => value.toUpperCase());
-    static readonly SNAKE = new CaseMode(1, /^[a-z]+(?:_[a-z]+)*$/gm,
+    static readonly SNAKE = new CaseMode('snake', /^[a-z]+(?:_[a-z]+)*$/gm,
         /(_[a-z0-9])/gm, (value) => value.toUpperCase().replace('_', ''),
         (value) => `_${value}`);
 
-    private readonly _value: number;
+    private readonly _value: string;
     private readonly _casingRegexp: RegExp;
     private readonly _tokenMatcher: RegExp;
     private readonly _characterExtractor: (value: string) => string;
     private readonly _decorator: (value: string) => string;
 
     private constructor(
-        value: number,
+        value: string,
         casingRegexp: RegExp,
         tokenMatcher: RegExp,
         characterExtractor: (value: string) => string,
         decorator: (value: string) => string
-    ) {        this._value = value;
+    ) {
+        this._value = value;
         this._casingRegexp = casingRegexp;
         this._tokenMatcher = tokenMatcher;
         this._characterExtractor = characterExtractor;
         this._decorator = decorator;
+    }
+
+    get value(): string {
+        return this._value;
     }
 
 
@@ -49,7 +54,7 @@ export default class CaseMode {
         return result;
     }
 
-    static detectCasing(value: string): CaseMode {
+    public static detectCasing(value: string): CaseMode {
         const found = CaseMode.values().find(mode => {
             const isMatched = mode._casingRegexp.test(value);
             mode._casingRegexp.lastIndex = 0;
@@ -60,7 +65,11 @@ export default class CaseMode {
     }
 
 
-    static values(): Array<CaseMode> {
+    public static values(): Array<CaseMode> {
         return [CaseMode.CAMEL, CaseMode.SNAKE];
+    }
+
+    public toString() {
+        return this._value;
     }
 }

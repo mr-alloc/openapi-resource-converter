@@ -1,8 +1,8 @@
 import HttpMethod from "@/type/open-api/constant/http-method";
 import IParsable from "@/type/open-api/protocol/i-parsable";
-import Path from "@/type/Path";
+import Path from "@/type/path";
 
-export default class APISpecification {
+export default class ApiSpecification {
 
     private readonly _method: HttpMethod;
     private readonly _path: Path;

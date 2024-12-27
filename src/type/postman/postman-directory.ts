@@ -1,4 +1,4 @@
-import IPostmanNode from "@/type/postman/IPostmanNode";
+import IPostmanNode from "@/type/postman/i-postman-node";
 
 export default class PostmanDirectory implements IPostmanNode {
     private readonly _name: string;

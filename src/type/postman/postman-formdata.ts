@@ -1,4 +1,4 @@
-export default class PostmanFormData {
+export default class PostmanFormdata {
     private readonly _key: string;
     private readonly _value: string;
     private readonly _type: string;

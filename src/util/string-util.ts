@@ -1,8 +1,8 @@
-export const isJson = (str: string): boolean => {
-    return !isEmpty(str) && str.startsWith("{") && str.endsWith("}");
+export const isJson = (str?: string): boolean => {
+    return !isEmpty(str) && str!.startsWith("{") && str!.endsWith("}");
 }
 
-export const isEmpty = (str: string): boolean => {
+export const isEmpty = (str?: string): boolean => {
     return str === null || str === undefined || str.trim().length === 0;
 }
 

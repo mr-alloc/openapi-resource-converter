@@ -1,25 +1,25 @@
 import IOpenapiConverter from "@/converter/i-openapi-converter";
-import PostmanImportFile from "@/type/postman/PostmanImportFile";
-import OpenAPISpecification from "@/type/open-api/OpenAPISpecification";
-import APISpecification from "@/type/open-api/APISpecification";
+import PostmanImportFile from "@/type/postman/postman-import-file";
+import OpenApiSpecification from "@/type/open-api/open-api-specification";
+import ApiSpecification from "@/type/open-api/api-specification";
 import {groupingAndThen, toMap} from "@/util/collection-util";
-import PostmanInfo from "@/type/postman/PostmanInfo";
+import PostmanInfo from "@/type/postman/postman-info";
 import crypto from "crypto";
-import IPostmanNode from "@/type/postman/IPostmanNode";
+import IPostmanNode from "@/type/postman/i-postman-node";
 import PostmanConvertConfigures from "@/converter/postman/postman-convert-configures";
-import Path from "@/type/Path";
-import PostmanDirectory from "@/type/postman/PostmanDirectory";
-import PostmanRequest from "@/type/postman/PostmanRequest";
-import PostmanUrl from "@/type/postman/PostmanUrl";
-import PostmanRequestWrapper from "@/type/postman/PostmanRequestWrapper";
+import Path from "@/type/path";
+import PostmanDirectory from "@/type/postman/postman-directory";
+import PostmanRequest from "@/type/postman/postman-request";
+import PostmanUrl from "@/type/postman/postman-url";
+import PostmanRequestWrapper from "@/type/postman/postman-request-wrapper";
 import IParsable from "@/type/open-api/protocol/i-parsable";
 import RequestBody from "@/type/open-api/protocol/request-body";
-import PostmanBodyWrapper from "@/type/postman/PostmanBodyWrapper";
+import PostmanBodyWrapper from "@/type/postman/postman-body-wrapper";
 import Formdata from "@/type/open-api/protocol/formdata";
-import PostmanFormData from "@/type/postman/PostmanFormData";
+import PostmanFormdata from "@/type/postman/postman-formdata";
 import Tag from "@/type/open-api/sub/Tag";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
-import IPostmanRequestBody from "@/type/postman/IPostmanRequestBody";
+import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import IField from "@/type/open-api/sub/i-field";
 import ObjectField from "@/type/open-api/sub/ObjectField";
 import DefaultValue from "@/type/postman/constant/DefaultValue";
@@ -29,18 +29,18 @@ import CaseMode from "@/type/postman/constant/CaseMode";
 import Parameter from "@/type/open-api/sub/Parameter";
 import HttpMethod from "@/type/open-api/constant/http-method";
 import InType from "@/type/open-api/constant/in-type";
-import PostmanHeader from "@/type/postman/PostmanHeader";
+import PostmanHeader from "@/type/postman/postman-header";
 
 export default class PostmanCollectionConverter implements IOpenapiConverter {
 
-    private readonly _openAPI: OpenAPISpecification;
-    private readonly _group: Map<string, Map<string, APISpecification>>;
+    private readonly _openAPI: OpenApiSpecification;
+    private readonly _group: Map<string, Map<string, ApiSpecification>>;
     private readonly _info: PostmanInfo;
     private readonly _nodes: Array<IPostmanNode>;
     private readonly _configures: PostmanConvertConfigures;
     private readonly _tagMap: Map<string, Tag>;
 
-    public constructor(openAPI: OpenAPISpecification, configures: PostmanConvertConfigures) {
+    public constructor(openAPI: OpenApiSpecification, configures: PostmanConvertConfigures) {
         this._openAPI = openAPI;
         this._group = groupingAndThen(
             openAPI.specs,
@@ -69,7 +69,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         return new PostmanImportFile(this._info, this._nodes)
     }
 
-    private readonly exploreNode = (spec: APISpecification) => {
+    private readonly exploreNode = (spec: ApiSpecification) => {
         this.exploreNodeInternal(this._nodes, spec.method, spec.path, 0);
     }
 
@@ -113,7 +113,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         }
     }
 
-    private readonly whenRequest = (spec: APISpecification) => {
+    private readonly whenRequest = (spec: ApiSpecification) => {
         //NOTE: PathVariable과 RequestBody를 동시에 사용하는경우 요청이 두개가 생기므로 이럴경우 PathVariable을 사용하는 요청을 필터링한다.
         const hasRequestBody = spec.bodies.some(body => body instanceof RequestBody);
         const hasFormData = spec.bodies.some(body => body instanceof Formdata);
@@ -156,12 +156,12 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         throw new Error("Not supported parsable type");
     }
 
-    private readonly toPostmanFormData = (parameter: Parameter): PostmanFormData => {
+    private readonly toPostmanFormData = (parameter: Parameter): PostmanFormdata => {
         const parameterKey = CaseMode.to(parameter.name, this._configures.casingMode);
         const value = this._configures.valuePlaceholder.has(parameterKey)
             ? `{{${this._configures.valuePlaceholder.get(parameterKey)}}}`
             : DefaultField.fromTypeFormat(parameter.type, parameter.format).value;
-        return new PostmanFormData(
+        return new PostmanFormdata(
             parameterKey,
             value,
             "text",
@@ -201,7 +201,8 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
             : path.indexOf(path.array.length - 1);
     }
 
-    private readonly excludePathFilter = (spec: APISpecification): boolean => {
-        return !this._configures.excludePaths.includes(spec.path.value);
+    private readonly excludePathFilter = (spec: ApiSpecification): boolean => {
+        const path = spec.path;
+        return !this._configures.excludePaths.some(excludePath => excludePath.matches(path));
     }
 }
