@@ -1,13 +1,13 @@
 import PostmanHeader from "@/type/postman/postman-header";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
-import CaseMode from "@/type/postman/constant/CaseMode";
+import CaseMode from "@/type/postman/constant/case-mode";
 import Path from "@/type/path";
 import HttpMethod from "@/type/open-api/constant/http-method";
 import Parameter from "@/type/open-api/sub/parameter";
 import TypeValue from "@/type/postman/type-value";
 import ParsedPostmanOption from "@/type/postman/parsed-postman-option";
 import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrapper-template";
-import RequestMode from "@/type/postman/constant/RequestMode";
+import RequestMode from "@/type/postman/constant/request-mode";
 
 export default class PostmanConvertConfigures {
 

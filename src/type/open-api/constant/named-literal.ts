@@ -8,5 +8,4 @@ export default {
     DESCRIPTION: "description",
     FORMAT: "format",
     EXAMPLE: "example"
-
 }

@@ -1,6 +1,6 @@
 import PostmanFormdata from "@/type/postman/postman-formdata";
 import PostmanOptions from "@/type/postman/postman-options";
-import RequestMode from "@/type/postman/constant/RequestMode";
+import RequestMode from "@/type/postman/constant/request-mode";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import {PostmanRequestBody} from "@/type/postman/postman-request-body";
 import PostmanHeader from "@/type/postman/postman-header";

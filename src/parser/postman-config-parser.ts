@@ -1,13 +1,13 @@
 import {parse} from 'yaml';
 import {getProp, getProps, hasProp, Property} from "@/util/object-util";
 import PostmanHeader from "@/type/postman/postman-header";
-import CaseMode from "@/type/postman/constant/CaseMode";
+import CaseMode from "@/type/postman/constant/case-mode";
 import {isEmpty} from "@/util/string-util";
 import ParsedPostmanOption from "@/type/postman/parsed-postman-option";
 import TypeValue from "@/type/postman/type-value";
 import Path from "@/type/path";
 import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrapper-template";
-import RequestMode from "@/type/postman/constant/RequestMode";
+import RequestMode from "@/type/postman/constant/request-mode";
 import Parameter from "@/type/open-api/sub/parameter";
 import InType from "@/type/open-api/constant/in-type";
 import DataType from "@/type/open-api/constant/data-type";
@@ -134,7 +134,7 @@ export default class PostmanConfigParser {
         return wrapperConfig.filter((wrapper) => this.requestWrapperFilter(wrapper))
             .map(wrapper => this.parseWrapperPolicy(wrapper));
     }
-    
+
     private requestWrapperFilter(wrapper: any): boolean {
         const requiredCondition = hasProp(wrapper, 'path') && hasProp(wrapper, 'type');
         if (!requiredCondition) {

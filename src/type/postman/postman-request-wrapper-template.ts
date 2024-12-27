@@ -1,5 +1,5 @@
 import Path from "@/type/path";
-import RequestMode from "@/type/postman/constant/RequestMode";
+import RequestMode from "@/type/postman/constant/request-mode";
 import Parameter from "@/type/open-api/sub/parameter";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 

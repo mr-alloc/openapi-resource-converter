@@ -12,17 +12,6 @@ postman:
       value: store_type
   request-wrapper:
     # json
-    - path: /api/**
-      type: raw
-      format: |
-          {
-            "ssn": {{ssn}},
-            "gsn": {{gsn}},
-            "session_info": {
-              "usn": {{usn}}
-            },
-            "enveloped_message": ${body}
-          }
     - path: /api/v1/**
       type: raw
       format: |
