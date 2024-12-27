@@ -22,15 +22,13 @@ import EmptyBody from "@/type/open-api/protocol/empty-body";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import IField from "@/type/open-api/sub/i-field";
 import ObjectField from "@/type/open-api/sub/object-field";
-import DefaultValue from "@/type/postman/constant/DefaultValue";
-import DefaultField from "@/type/postman/constant/DefaultValue";
+import DefaultValue from "@/type/postman/constant/default-value";
 import ValueField from "@/type/open-api/sub/value-field";
-import CaseMode from "@/type/postman/constant/CaseMode";
+import CaseMode from "@/type/postman/constant/case-mode";
 import Parameter from "@/type/open-api/sub/parameter";
 import HttpMethod from "@/type/open-api/constant/http-method";
 import InType from "@/type/open-api/constant/in-type";
 import PostmanHeader from "@/type/postman/postman-header";
-import RequestMode from "@/type/postman/constant/RequestMode";
 
 export default class PostmanCollectionConverter implements IOpenapiConverter {
 
@@ -65,16 +63,14 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
     public convert(): PostmanImportFile {
         const filtered = this._openAPI.specs.filter(this.excludePathFilter);
 
-        filtered.forEach(this.exploreNode);
+        for (const spec of filtered) {
+            this.exploreNode(this._nodes, spec.method, spec.path, 0);
+        }
 
         return new PostmanImportFile(this._info, this._nodes)
     }
 
-    private readonly exploreNode = (spec: ApiSpecification) => {
-        this.exploreNodeInternal(this._nodes, spec.method, spec.path, 0);
-    }
-
-    private readonly exploreNodeInternal = (branches: Array<IPostmanNode>, method: HttpMethod, path: Path, index: number) => {
+    private readonly exploreNode = (branches: Array<IPostmanNode>, method: HttpMethod, path: Path, index: number) => {
         if (path.array.length < index) {
             return;
         }
@@ -95,7 +91,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
 
         if (isDirectory && path.array.length !== index) {
             const directory = branches.find(node => node.path === currentCursor.value && node instanceof PostmanDirectory) as PostmanDirectory;
-            this.exploreNodeInternal(directory.item, method, path, index + 1);
+            this.exploreNode(directory.item, method, path, index + 1);
         }
     }
 
@@ -103,7 +99,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         if (isDirectory) {
             const directory = new PostmanDirectory(this.getDirectoryName(currentCursor), currentCursor.value, []);
             branches.push(directory);
-            this.exploreNodeInternal(directory.item, method, path, index + 1);
+            this.exploreNode(directory.item, method, path, index + 1);
         } else {
             const methodMap = this._group.get(currentCursor.value);
             const request = methodMap?.get(method.value.toUpperCase());
@@ -121,7 +117,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         const needFilterPathVariableRequest = hasFormData && hasRequestBody && spec.bodies.find(body => body instanceof Formdata)?.needExtract();
         const parsableBodies = needFilterPathVariableRequest ? spec.bodies.filter(body => !(body instanceof Formdata)) : spec.bodies;
 
-        return parsableBodies.map(body => this.extractBody(body, spec.path, spec.method)).map(bodyWrapper => {
+        return parsableBodies.map(body => this.extractBody(body, spec.path)).map(bodyWrapper => {
             const headers = this._configures.headers;
             headers.push(...bodyWrapper.headers);
             const request = new PostmanRequest(
@@ -134,25 +130,46 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         });
     }
 
-    private readonly extractBody = (parsable: IParsable, path: Path, method: HttpMethod) => {
+    private extractRequestBody(parsable: IParsable, path: Path) {
+        const requestBody = parsable as RequestBody;
+        const rawBody = this.toPostmanRawBody(requestBody.fields);
+
+        const wrappedBody = this._configures.wrappingBody(path, rawBody);
+
+        return PostmanBodyWrapper.fromRaw(wrappedBody);
+    }
+
+    private extractFormdata(parsable: IParsable, path: Path) {
+        const formdata = parsable as Formdata;
+        const parameters = formdata.parameters.concat(this._configures.getDefaultParameters(path));
+
+        const data = parameters
+            .filter(param => param.in.value !== InType.HEADER.value)
+            .map(this.toPostmanFormData);
+        const headers = parameters.filter(param => param.in.value === InType.HEADER.value);
+        //TODO Header Accumulation
+        const bodyWrapper = PostmanBodyWrapper.fromFormData(data);
+        bodyWrapper.headers = headers.map(header => new PostmanHeader(
+            header.name,
+            DefaultValue.fromTypeFormat(header.type, header.format).value
+        ))
+        return bodyWrapper;
+    }
+
+    private extractEmptyBody(path: Path) {
+        const defaultBody = this._configures.wrappingBody(path, {});
+        return Array.isArray(defaultBody)
+            ? PostmanBodyWrapper.fromFormData(defaultBody.map(this.toPostmanFormData))
+            : PostmanBodyWrapper.fromRaw(defaultBody);
+    }
+
+    private readonly extractBody = (parsable: IParsable, path: Path) => {
         if (parsable instanceof RequestBody) {
-            const requestBody = parsable as RequestBody;
-            let rawBody = this.toPostmanRawBody(requestBody.fields);
-            const wrappedBody = this._configures.wrappingBody(path, rawBody);
-            return PostmanBodyWrapper.fromRaw(wrappedBody);
+            return this.extractRequestBody(parsable, path);
         } else if (parsable instanceof Formdata) {
-            const formdata = parsable as Formdata;
-            const parameters = [...formdata.parameters, ...this._configures.getDefaultParameters(path)];
-            const data = parameters.filter(param => param.in.value !== InType.HEADER.value).map(this.toPostmanFormData);
-            const headers = parameters.filter(param => param.in.value === InType.HEADER.value);
-            const bodyWrapper = PostmanBodyWrapper.fromFormData(data);
-            bodyWrapper.headers = headers.map(header => new PostmanHeader(header.name, DefaultField.fromTypeFormat(header.type, header.format).value))
-            return bodyWrapper;
+            return this.extractFormdata(parsable, path);
         } else if (parsable instanceof EmptyBody) {
-            const defaultBody = this._configures.wrappingBody(path, {});
-            return Array.isArray(defaultBody)
-                ? PostmanBodyWrapper.fromFormData(defaultBody.map(this.toPostmanFormData))
-                : PostmanBodyWrapper.fromRaw(defaultBody);
+            return this.extractEmptyBody(path);
         }
         throw new Error("Not supported parsable type");
     }
@@ -161,7 +178,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         const parameterKey = CaseMode.to(parameter.name, this._configures.casingMode);
         const value = this._configures.valuePlaceholder.has(parameterKey)
             ? `{{${this._configures.valuePlaceholder.get(parameterKey)}}}`
-            : DefaultField.fromTypeFormat(parameter.type, parameter.format).value;
+            : DefaultValue.fromTypeFormat(parameter.type, parameter.format).value;
         return new PostmanFormdata(
             parameterKey,
             value,

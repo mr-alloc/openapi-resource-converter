@@ -1,4 +1,4 @@
-import CaseMode from "@/type/postman/constant/CaseMode";
+import CaseMode from "@/type/postman/constant/case-mode";
 import PostmanHeader from "@/type/postman/postman-header";
 import TypeValue from "@/type/postman/type-value";
 import Path from "@/type/path";

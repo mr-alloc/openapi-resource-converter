@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 import 'module-alias/register';
-
-import {readFile} from "@/util/file-util";
 import {Command} from "commander";
-import ComponentParser from "@/parser/component-parser";
 import PostmanCommandBuilder from "@/converter/postman/postman-command-builder";
 import {CommandOption} from "@/types";
 
@@ -16,17 +13,6 @@ program
     .name('orc')
     .description('OpenAPI Resource Converter')
     .option('-h, --help', '도움말 표시');
-
-
-program
-    .command('component')
-    .description('only convert openapi.components')
-    .action((options) => {
-        const file = readFile(openApiFilePath);
-        const json = JSON.parse(file);
-
-        const map = new ComponentParser(json.components).parse();
-    });
 
 program
     .command('postman')
@@ -45,6 +31,6 @@ program
         }
     });
 
-program
+
 
 program.parse(process.argv);

@@ -9,7 +9,7 @@ export default class EmptyBody implements IParsable {
         return '(empty)';
     }
 
-    needExtract(): boolean {
+    public needExtract(): boolean {
         return false;
     }
 }

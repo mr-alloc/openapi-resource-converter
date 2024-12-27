@@ -1,5 +1,5 @@
 import PostmanConvertConfigures from "@/converter/postman/postman-convert-configures";
-import CaseMode from "@/type/postman/constant/CaseMode";
+import CaseMode from "@/type/postman/constant/case-mode";
 import OpenApiSpecification from "@/type/open-api/open-api-specification";
 import OpenApiParser from "@/parser/open-api-parser";
 import {isEmpty} from "@/util/string-util";

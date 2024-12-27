@@ -5,9 +5,6 @@ import {ContentType} from "@/type/open-api/constant/content-type";
 
 export default class RequestBody implements IParsable {
 
-    private static readonly TOKEN_PATH_CONTENT_JSON_SCHEMA_PROPERTIES = "content.application/json.schema.properties";
-    private static readonly TOKEN_PATH_CONTENT_FORM_SCHEMA_PROPERTIES = "content.application/x-www-form-urlencoded.schema.properties";
-
     private static readonly CONTENT_TYPE_MAP = new Map<ProtocolType, ContentType>([
         [ProtocolType.REQUEST_BODY, ContentType.APPLICATION_JSON],
         [ProtocolType.URL_ENCODED, ContentType.APPLICATION_X_WWW_FORM_URLENCODED],
@@ -42,7 +39,7 @@ export default class RequestBody implements IParsable {
         return contentType;
     }
 
-    toJSON() {
+    public toJSON() {
         return {
             contentType: this._contentType,
             fields: this._fields

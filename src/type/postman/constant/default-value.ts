@@ -30,7 +30,7 @@ export default class DefaultValue {
         return this._parser(this._value);
     }
 
-    static fromTypeFormat(type: DataType, format: DataFormat) {
+    public static fromTypeFormat(type: DataType, format: DataFormat) {
         switch (type) {
             case DataType.STRING:
                 return DefaultValue.STRING;
