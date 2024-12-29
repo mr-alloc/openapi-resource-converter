@@ -1,5 +1,6 @@
 import IPostmanNode from "@/type/postman/i-postman-node";
 import PostmanRequest from "@/type/postman/postman-request";
+import Path from "@/type/path";
 
 export default class PostmanRequestWrapper implements IPostmanNode {
     private readonly _name: string;
@@ -10,8 +11,9 @@ export default class PostmanRequestWrapper implements IPostmanNode {
         this._request = request
     }
 
-    get path(): string {
-        return this._name
+    get path(): Path {
+        const joined = this._request.url.path.map(each => '/' + each).join('');
+        return new Path(`${joined}:${this._request.method}`);
     }
 
     toJSON() {

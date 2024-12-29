@@ -21,6 +21,10 @@ export default class HttpMethod {
         return this._value;
     }
 
+    get upperValue(): string {
+        return this._value.toUpperCase();
+    }
+
     static hasValue(value: string): boolean {
         return HttpMethod.CACHED.has(value);
     }

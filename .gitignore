@@ -4,3 +4,4 @@
 /static/postman.json
 /resources/openapi.json
 /yarn.lock
+/dist/

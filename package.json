@@ -7,7 +7,8 @@
     "clean:js": "rimraf ./src/*.js ./src/**/*.js",
     "build": "tsc",
     "re-build": "yarn clean; yarn build",
-    "convert": "ts-node -r tsconfig-paths/register src/index"
+    "convert": "ts-node -r tsconfig-paths/register src/index",
+    "test": "yarn re-build; yarn convert postman -f ./resources/openapi.json -o ./static/postman.json -c ./resources/config.yaml"
   },
   "bin": {
     "orc": "./dist/index.js"
