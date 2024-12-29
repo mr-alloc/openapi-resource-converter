@@ -43,7 +43,7 @@ export default class Path {
         return minimatch(path.value, this._value);
     }
 
-    public toString() {
+    public toString(): string {
         return this._value;
     }
 }

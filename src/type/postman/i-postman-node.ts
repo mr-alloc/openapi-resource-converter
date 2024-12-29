@@ -1,4 +1,6 @@
+import Path from "@/type/path";
+
 export default interface IPostmanNode {
 
-    get path(): string;
+    get path(): Path;
 }

@@ -1,17 +1,18 @@
 import IPostmanNode from "@/type/postman/i-postman-node";
+import Path from "@/type/path";
 
 export default class PostmanDirectory implements IPostmanNode {
     private readonly _name: string;
-    private readonly _path: string;
+    private readonly _path: Path;
     private readonly _item: Array<IPostmanNode>;
 
     constructor(name: string, path: string, item: Array<IPostmanNode>) {
         this._name = name
-        this._path = path
+        this._path = new Path(path);
         this._item = item
     }
 
-    get path(): string {
+    get path(): Path {
         return this._path
     }
 

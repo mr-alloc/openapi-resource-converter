@@ -70,27 +70,66 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         return new PostmanImportFile(this._info, this._nodes)
     }
 
+    private notExistInGroup(path: Path, method: HttpMethod): boolean {
+        if (!this._group.has(path.value)) {
+            return true;
+        }
+
+        const methodMap = this._group.get(path.value)!;
+        return !methodMap.has(method.upperValue);
+    }
+
+    private checkNewNode(branches: Array<IPostmanNode>, currentCursor: Path, isDirectory: boolean) {
+        if (currentCursor.value.startsWith('/v1/mission')) {
+            console.log(`[${currentCursor}] branches:`, branches.map(node => node.path.value));
+        }
+        return isDirectory
+            //1. 디렉토리 노드인경우 branch 목록 중 PostmanDirectory 가 없어야 한다.
+            ? !branches.some(node => node.path.value === currentCursor.value && node instanceof PostmanDirectory)
+            //2. 요청 노드인경우 해당 경로에 한개만 있어야하며, PostmanRequestWrapper 이어야만 한다.
+            : branches.filter(node => node.path.value === currentCursor.value && node instanceof PostmanRequestWrapper).length === 0;
+    }
     private readonly exploreNode = (branches: Array<IPostmanNode>, method: HttpMethod, path: Path, index: number) => {
-        if (path.array.length < index) {
+        if (path.array.length == index) {
             return;
         }
 
-        const currentCursor = path.subset(index);
-        const isDirectory = !this._group.has(currentCursor.value) || !this._group.get(currentCursor.value)?.has(method.value.toUpperCase());
-        // isNewNode는 다음의 기준으로 결정된다.
-        const isNewNode = isDirectory
-            //1. 디렉토리 노드인경우 branch들중 PostmanDirectory가 없어야 한다.
-            ? !branches.some(node => node.path === currentCursor.value && node instanceof PostmanDirectory)
-            //2. 요청 노드인경우 해당 경로에 한개만 있어야하며, PostmanRequestWrapper여야 한다.
-            : branches.filter(node => node.path === currentCursor.value && node instanceof PostmanRequestWrapper).length === 0
 
+        const currentCursor = path.subset(index);
+        const isDirectory = this.notExistInGroup(currentCursor, method);
+        const isNewNode = this.checkNewNode(branches, currentCursor, isDirectory);
+        const existSameNameDirectory = !isDirectory && isNewNode && currentCursor.value === path.value && branches
+            .filter(node => node instanceof PostmanDirectory)
+            .some(node => node.path.value === currentCursor.value);
+
+        if (path.value.startsWith('/v1/mission')) {
+            console.log(`${path.value} - ${currentCursor.value}`)
+            console.log(`{DIR: ${isDirectory}|NEW: ${isNewNode}|IDX: ${index}|EXS: ${existSameNameDirectory}}`, branches.map(node => node.path.value))
+            console.log('--------------------------------------------------------------------')
+        }
+
+        //새로운 노드이면서, 디렉토리가 아니고, 같은 이름의 디렉토리가 있다면 그곳으로 들어간다.
+        if (existSameNameDirectory) {
+            const found = branches.filter(node => node instanceof PostmanDirectory)
+                .find(node => node.path.value === currentCursor.value) as PostmanDirectory;
+
+            if (path.value.startsWith('/v1/mission')) {
+                console.log(`[${currentCursor.value}:${method}] found`, found);
+            }
+
+            if (found) {
+                this.addRequest(found.item, currentCursor, method);
+            }
+        }
+        //새로운 노드라서, 브랜치(디렉토리) 안으로 넣어야 하는경우
         if (isNewNode) {
             this.handleNewNode(branches, method, path, index, currentCursor, isDirectory);
             return;
         }
 
-        if (isDirectory && path.array.length !== index) {
-            const directory = branches.find(node => node.path === currentCursor.value && node instanceof PostmanDirectory) as PostmanDirectory;
+        //디렉토리면서, 아직 순회할 경로가 남아있다면.
+        if (isDirectory && path.array.length > index) {
+            const directory = branches.find(node => node.path.value === currentCursor.value && node instanceof PostmanDirectory) as PostmanDirectory;
             this.exploreNode(directory.item, method, path, index + 1);
         }
     }
@@ -101,12 +140,21 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
             branches.push(directory);
             this.exploreNode(directory.item, method, path, index + 1);
         } else {
-            const methodMap = this._group.get(currentCursor.value);
-            const request = methodMap?.get(method.value.toUpperCase());
+            this.addRequest(branches, currentCursor, method);
+        }
+    }
 
-            if (request) {
-                this.whenRequest(request).forEach(request => branches.push(request));
-            }
+    private readonly addRequest = (branches: Array<IPostmanNode>, currentCursor: Path, method: HttpMethod) => {
+        const methodMap = this._group.get(currentCursor.value);
+        const request = methodMap?.get(method.value.toUpperCase());
+
+        if (currentCursor.value.startsWith('/v1/mission')) {
+            console.log(`[${currentCursor.value}:${method}] request`, request);
+        }
+
+        //exist in request map
+        if (request) {
+            this.whenRequest(request).forEach(request => branches.push(request));
         }
     }
 
