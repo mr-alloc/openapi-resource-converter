@@ -1,5 +1,5 @@
 import {parse} from 'yaml';
-import {getProp, getProps, hasProp, Property} from "@/util/object-util";
+import {getProp, getDeepProps, hasProp, Property} from "@/util/object-util";
 import PostmanHeader from "@/type/postman/postman-header";
 import CaseMode from "@/type/postman/constant/case-mode";
 import {isEmpty} from "@/util/string-util";
@@ -69,7 +69,7 @@ export default class PostmanConfigParser {
             return [];
         }
 
-        const prop = getProps(config, [this.KEY_HEADERS]);
+        const prop = getDeepProps(config, [this.KEY_HEADERS]);
         if ( ! Array.isArray(prop)) {
             return [];
         }
@@ -101,7 +101,7 @@ export default class PostmanConfigParser {
             return map;
         }
 
-        const properties = getProps(config, [this.KEY_PLACEHOLDER]);
+        const properties = getDeepProps(config, [this.KEY_PLACEHOLDER]);
         for (const property of properties) {
             if (! hasProp(property, 'type') || ! hasProp(property, 'value')) {
                 continue;
@@ -163,7 +163,7 @@ export default class PostmanConfigParser {
             case RequestMode.RAW: {
                 const format = getProp<string>(wrapper, 'format');
                 return PostmanRequestWrapperTemplate.ofConfig(path, mode, (str: IPostmanRequestBody) => {
-                    return format.replace('${body}', str as string);
+                    return format.replace('${body}', JSON.stringify(str));
                 });
             }
             case RequestMode.FORMDATA: {

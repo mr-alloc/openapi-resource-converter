@@ -1,6 +1,6 @@
 postman:
   host: "{{url}}"
-  case: snake
+  case: camel
   exclude-path:
     - /
     - /error

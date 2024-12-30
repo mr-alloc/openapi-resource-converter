@@ -98,6 +98,7 @@ export default class OpenApiParser {
 
                 //각 토큰 별로 (요청값 별로 토큰이 나눠져 있음으로 한번 더 반복이 필요없음
                 const parsable = parser.parse(metadata, protocol, this._components);
+
                 bodies.push(parsable);
             }
 
