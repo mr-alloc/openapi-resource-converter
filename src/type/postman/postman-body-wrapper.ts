@@ -10,7 +10,6 @@ export default class PostmanBodyWrapper {
     private readonly _mode: string;
     private readonly _data: PostmanRequestBody;
     private readonly _options?: PostmanOptions;
-    private _headers: Array<PostmanHeader> = [];
 
     private constructor(mode: string, data: PostmanRequestBody, options?: PostmanOptions) {
         this._mode = mode
@@ -18,15 +17,7 @@ export default class PostmanBodyWrapper {
         this._options = options
     }
 
-    set headers(value: Array<PostmanHeader>) {
-        this._headers = value;
-    }
-
-    get headers(): Array<PostmanHeader> {
-        return this._headers;
-    }
-
-    toJSON() {
+    public toJSON() {
         const wrapper = {
             mode: this._mode
         } as unknown as {

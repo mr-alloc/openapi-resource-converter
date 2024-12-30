@@ -28,6 +28,7 @@ import CaseMode from "@/type/postman/constant/case-mode";
 import Parameter from "@/type/open-api/sub/parameter";
 import InType from "@/type/open-api/constant/in-type";
 import PostmanHeader from "@/type/postman/postman-header";
+import PostmanPathVariable from "@/type/postman/postman-path-variable";
 
 export default class PostmanCollectionConverter implements IOpenapiConverter {
 
@@ -116,18 +117,26 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
             : spec.bodies;
 
         //TODO Path Variable 처리 필요.
-        return parsableBodies.map(body => this.extractBody(body, spec.path))
-            .map(bodyWrapper => {
-                const headers = this._configures.headers;
-                headers.push(...bodyWrapper.headers);
-                const request = new PostmanRequest(
-                    spec.method,
-                    headers,
-                    PostmanUrl.of(this._configures.host, spec.path.value),
-                    bodyWrapper
-                );
+        return parsableBodies
+            .map(body => {
+                const bodyWrapper = this.extractBody(body, spec.path);
+                const url = new PostmanUrl(this._configures.host, spec.path, this.extractPathVariables(body));
+                const request = new PostmanRequest(spec.method, this._configures.headers, url, bodyWrapper);
                 return new PostmanRequestWrapper(spec.summary, request)
             });
+    }
+
+    private readonly extractPathVariables = (body: IParsable): Array<PostmanPathVariable> => {
+        if (!(body instanceof Parameters)) {
+            return [];
+        }
+
+        const pathVariables = (body as Parameters).getValues(InType.PATH);
+        if (pathVariables.length === 0) {
+            return [];
+        }
+
+        return PostmanPathVariable.ofParameters(pathVariables);
     }
 
     private readonly extractBody = (parsable: IParsable, path: Path) => {
@@ -152,18 +161,12 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
 
     private extractParameters(parsable: IParsable, path: Path) {
         const parameters = parsable as Parameters;
-        const headers = PostmanHeader.ofParameters(parameters.getValues(InType.HEADER))
-            .concat(this._configures.headers);
         const queryParameters = parameters.getValues(InType.QUERY)
             .concat(this._configures.getDefaultParameters(path));
 
         const data = queryParameters.map(this.toPostmanFormData);
 
-        //TODO Header Accumulation
-        const bodyWrapper = PostmanBodyWrapper.fromFormData(data);
-        bodyWrapper.headers = headers
-        bodyWrapper.url
-        return bodyWrapper;
+        return PostmanBodyWrapper.fromFormData(data);
     }
 
     private extractEmptyBody(path: Path) {
