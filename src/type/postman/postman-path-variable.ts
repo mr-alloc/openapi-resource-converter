@@ -1,4 +1,6 @@
 import DataType from "@/type/open-api/constant/data-type";
+import Parameter from "@/type/open-api/sub/parameter";
+import DefaultValue from "@/type/postman/constant/default-value";
 
 export default class PostmanPathVariable {
 
@@ -43,4 +45,28 @@ export default class PostmanPathVariable {
     get description(): string {
         return this._description;
     }
+
+    public static ofParameters(parameters: Array<Parameter>) {
+        return parameters.map(param => new PostmanPathVariable(
+            '', param.name, DefaultValue.fromTypeFormat(param.type, param.format).value, param.type, '', param.description
+        ));
+    }
+
+    public toJSON() {
+        const result = {
+            key: this._key,
+            value: this._value,
+            description: this._description
+        } as unknown as {
+            id?: string,
+            key: string,
+            value: string,
+            type?: string,
+            name?: string
+            description: string,
+        };
+
+        return result;
+    }
+
 }

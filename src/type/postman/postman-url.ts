@@ -1,7 +1,8 @@
-import {split} from "@/util/collection-util";
+import {split, toMap} from "@/util/collection-util";
 import {raw} from "express";
 import * as path from "path";
 import PostmanPathVariable from "@/type/postman/postman-path-variable";
+import Path from "@/type/path";
 
 export default class PostmanUrl {
 
@@ -12,12 +13,17 @@ export default class PostmanUrl {
     private readonly _variable: Array<PostmanPathVariable>
 
 
-    constructor(raw: string, protocol: string, host: Array<string>, path: Array<string>) {
-        this._raw = raw
-        this._protocol = protocol
-        this._host = host
-        this._path = path
-        this._variable = [];
+    public constructor(host: string, path: Path, variables: Array<PostmanPathVariable>) {
+        const changed = variables.reduce((origin, variable) => {
+            const template = `{${variable.key}}`;
+            return origin.replace(template, `:${variable.key}`);
+        }, path.value);
+        const bindPath = new Path(changed);
+        this._raw = `${host}${bindPath.value}`;
+        this._protocol = ''
+        this._host = [host]
+        this._path = bindPath.array
+        this._variable = variables;
     }
 
 
@@ -37,23 +43,6 @@ export default class PostmanUrl {
         return this._path;
     }
 
-    getHost(): Array<string> {
-        return this._host
-    }
-
-    getPath(): Array<string> {
-        return this._path
-    }
-
-    public static of(host: string, endPoint: string): PostmanUrl {
-        return new PostmanUrl(
-            `${host}${endPoint}`,
-            '',
-            [host],
-            split(endPoint, '/')
-        )
-    }
-
     public toJSON() {
         const result = {
             raw: this._raw,
@@ -71,7 +60,7 @@ export default class PostmanUrl {
             result.protocol = this._protocol;
         }
 
-        if (this._variable.length === 0) {
+        if (this._variable.length !== 0) {
             result.variable = this._variable;
         }
 

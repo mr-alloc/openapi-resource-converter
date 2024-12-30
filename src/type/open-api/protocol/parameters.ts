@@ -28,7 +28,7 @@ export default class Parameters implements IParsable {
 
     public toJSON() {
         return {
-            parameters: this._values
+            values: this._values
         }
     }
 
