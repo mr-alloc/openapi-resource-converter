@@ -7,7 +7,7 @@ import DataFormat from "@/type/open-api/constant/data-format";
 import IField from "@/type/open-api/sub/i-field";
 import ObjectField from "@/type/open-api/sub/object-field";
 import ProtocolType from "@/type/open-api/constant/protocol-type";
-import {getProp, getPropOrDefault, getProps, hasProp, Property} from "@/util/object-util";
+import {getProp, getPropOrDefault, getDeepProps, hasProp, Property, getDeepProp} from "@/util/object-util";
 
 export default class RequestBodyParser implements IParser<RequestBody> {
 
@@ -22,7 +22,17 @@ export default class RequestBodyParser implements IParser<RequestBody> {
     public parse(metadata: Property, protocol: ProtocolType, components: Map<string, Array<IField>>): RequestBody {
         const contentType = RequestBody.findContentType(protocol);
 
-        const properties = getProps(metadata.value, ['content', contentType, 'schema', 'properties']);
+        //schema 의 필드 값들
+        const schemaProperties = getDeepProps(metadata.value, ['content', contentType, 'schema']);
+        const hasReference = schemaProperties.some(prop => prop.name === NamedLiteral.REFERENCE_KEY);
+
+        if (hasReference) {
+            //schema 자체
+            const property = getDeepProp(metadata.value, ['content', contentType, 'schema']);
+            return new RequestBody(contentType, this.extractReferenceFields(property, components));
+        }
+
+        const properties = getDeepProps(metadata.value, ['content', contentType, 'schema', 'properties']);
         const fields = this.parseInternal(properties, components);
         return new RequestBody(contentType, fields);
     }
@@ -30,12 +40,16 @@ export default class RequestBodyParser implements IParser<RequestBody> {
     private parseInternal(properties: Array<Property>, components: Map<string, Array<IField>>): Array<IField> {
         return properties.map(property => {
             if (hasProp(property.value, NamedLiteral.REFERENCE_KEY)) {
-                const referenceKey = getProp<string>(property.value, NamedLiteral.REFERENCE_KEY);
-                const fields = components.get(referenceKey) ?? [];
+                const fields = this.extractReferenceFields(property, components);
                 return new ObjectField(property.name, '', DataType.OBJECT, fields);
             }
             return InternalFieldParser.getInstance().parse(property.name, property.value);
         });
+    }
+
+    private extractReferenceFields (property: Property, components: Map<string, Array<IField>>): Array<IField> {
+        const referenceKey = getProp<string>(property.value, NamedLiteral.REFERENCE_KEY);
+        return components.get(referenceKey) ?? [];
     }
 
 }

@@ -9,14 +9,14 @@ export default class PostmanRequest {
 
     private readonly _method: string;
     private readonly _header: Array<PostmanHeader>;
-    private readonly _body: PostmanBodyWrapper;
     private readonly _url: PostmanUrl;
+    private readonly _body?: PostmanBodyWrapper;
 
-    constructor(method: HttpMethod, header: Array<PostmanHeader>, body: PostmanBodyWrapper, url: PostmanUrl) {
+    public constructor(method: HttpMethod, header: Array<PostmanHeader>, url: PostmanUrl,  body?: PostmanBodyWrapper) {
         this._method = method.value.toUpperCase();
         this._header = header;
-        this._body = body;
         this._url = url;
+        this._body = body;
     }
 
 
@@ -28,7 +28,7 @@ export default class PostmanRequest {
         return this._header;
     }
 
-    get body(): PostmanBodyWrapper {
+    get body(): PostmanBodyWrapper | undefined {
         return this._body;
     }
 
@@ -36,12 +36,22 @@ export default class PostmanRequest {
         return this._url;
     }
 
-    toJSON() {
-        return {
-            "method": this._method,
-            "header": this._header,
-            "body": this._body,
-            "url": this._url
+    public toJSON() {
+        const result = {
+            method: this._method,
+            header: this._header,
+            url: this._url
+        } as unknown as {
+            method: string,
+            header: Array<PostmanHeader>,
+            url: PostmanUrl,
+            body?: PostmanBodyWrapper
         }
+
+        if (this._body) {
+            result.body = this._body;
+        }
+
+        return result;
     }
 }

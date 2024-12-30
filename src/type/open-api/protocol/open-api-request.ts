@@ -30,7 +30,7 @@ export default class OpenApiRequest {
     get summary(): string {
         const found = this._metadata.find((prop) => prop.name === ProtocolType.SUMMARY.value);
         return found?.value
-            ?? Path.ofValue(this._path).lastValue();
+            ?? Path.ofValue(this._path).lastValue;
     }
 
     get metadataProtocols(): Array<ProtocolType> {

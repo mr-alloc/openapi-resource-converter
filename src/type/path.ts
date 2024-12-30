@@ -19,7 +19,15 @@ export default class Path {
         return this._array;
     }
 
-    subset(index: number) {
+    get length(): number {
+        return this._array.length;
+    }
+
+    get lastValue() {
+        return this._array[this._array.length - 1];
+    }
+
+    public subset(index: number) {
         return Path.of(this._array.slice(0, index +1));
     }
 
@@ -35,9 +43,6 @@ export default class Path {
         return this._array[index];
     }
 
-    lastValue() {
-        return this._array[this._array.length - 1];
-    }
 
     public matches(path: Path): boolean {
         return minimatch(path.value, this._value);
@@ -45,5 +50,9 @@ export default class Path {
 
     public toString(): string {
         return this._value;
+    }
+
+    public equals(other: Path) {
+        return this._value === other.value;
     }
 }

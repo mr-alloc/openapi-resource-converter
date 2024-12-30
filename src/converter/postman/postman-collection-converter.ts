@@ -15,7 +15,7 @@ import PostmanRequestWrapper from "@/type/postman/postman-request-wrapper";
 import IParsable from "@/type/open-api/protocol/i-parsable";
 import RequestBody from "@/type/open-api/protocol/request-body";
 import PostmanBodyWrapper from "@/type/postman/postman-body-wrapper";
-import Formdata from "@/type/open-api/protocol/formdata";
+import Parameters from "@/type/open-api/protocol/parameters";
 import PostmanFormdata from "@/type/postman/postman-formdata";
 import Tag from "@/type/open-api/sub/tag";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
@@ -26,7 +26,6 @@ import DefaultValue from "@/type/postman/constant/default-value";
 import ValueField from "@/type/open-api/sub/value-field";
 import CaseMode from "@/type/postman/constant/case-mode";
 import Parameter from "@/type/open-api/sub/parameter";
-import HttpMethod from "@/type/open-api/constant/http-method";
 import InType from "@/type/open-api/constant/in-type";
 import PostmanHeader from "@/type/postman/postman-header";
 
@@ -38,6 +37,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
     private readonly _nodes: Array<IPostmanNode>;
     private readonly _configures: PostmanConvertConfigures;
     private readonly _tagMap: Map<string, Tag>;
+    private readonly _directoryMap: Map<string, PostmanDirectory>;
 
     public constructor(openAPI: OpenApiSpecification, configures: PostmanConvertConfigures) {
         this._openAPI = openAPI;
@@ -58,124 +58,87 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
 
             return tag.description;
         });
+        this._directoryMap = new Map<string, PostmanDirectory>();
     }
 
     public convert(): PostmanImportFile {
         const filtered = this._openAPI.specs.filter(this.excludePathFilter);
 
         for (const spec of filtered) {
-            this.exploreNode(this._nodes, spec.method, spec.path, 0);
-        }
+            const method = spec.method;
+            const path = spec.path;
 
-        return new PostmanImportFile(this._info, this._nodes)
-    }
+            const methodMap = this._group.get(path.value);
+            const request = methodMap?.get(method.value.toUpperCase())!;
+            const existDirectory = this._directoryMap.has(path.value);
 
-    private notExistInGroup(path: Path, method: HttpMethod): boolean {
-        if (!this._group.has(path.value)) {
-            return true;
-        }
-
-        const methodMap = this._group.get(path.value)!;
-        return !methodMap.has(method.upperValue);
-    }
-
-    private checkNewNode(branches: Array<IPostmanNode>, currentCursor: Path, isDirectory: boolean) {
-        if (currentCursor.value.startsWith('/v1/mission')) {
-            console.log(`[${currentCursor}] branches:`, branches.map(node => node.path.value));
-        }
-        return isDirectory
-            //1. 디렉토리 노드인경우 branch 목록 중 PostmanDirectory 가 없어야 한다.
-            ? !branches.some(node => node.path.value === currentCursor.value && node instanceof PostmanDirectory)
-            //2. 요청 노드인경우 해당 경로에 한개만 있어야하며, PostmanRequestWrapper 이어야만 한다.
-            : branches.filter(node => node.path.value === currentCursor.value && node instanceof PostmanRequestWrapper).length === 0;
-    }
-    private readonly exploreNode = (branches: Array<IPostmanNode>, method: HttpMethod, path: Path, index: number) => {
-        if (path.array.length == index) {
-            return;
-        }
-
-
-        const currentCursor = path.subset(index);
-        const isDirectory = this.notExistInGroup(currentCursor, method);
-        const isNewNode = this.checkNewNode(branches, currentCursor, isDirectory);
-        const existSameNameDirectory = !isDirectory && isNewNode && currentCursor.value === path.value && branches
-            .filter(node => node instanceof PostmanDirectory)
-            .some(node => node.path.value === currentCursor.value);
-
-        if (path.value.startsWith('/v1/mission')) {
-            console.log(`${path.value} - ${currentCursor.value}`)
-            console.log(`{DIR: ${isDirectory}|NEW: ${isNewNode}|IDX: ${index}|EXS: ${existSameNameDirectory}}`, branches.map(node => node.path.value))
-            console.log('--------------------------------------------------------------------')
-        }
-
-        //새로운 노드이면서, 디렉토리가 아니고, 같은 이름의 디렉토리가 있다면 그곳으로 들어간다.
-        if (existSameNameDirectory) {
-            const found = branches.filter(node => node instanceof PostmanDirectory)
-                .find(node => node.path.value === currentCursor.value) as PostmanDirectory;
-
-            if (path.value.startsWith('/v1/mission')) {
-                console.log(`[${currentCursor.value}:${method}] found`, found);
-            }
-
-            if (found) {
-                this.addRequest(found.item, currentCursor, method);
+            //디렉토리가 이미 생성된 경우
+            if (existDirectory) {
+                const directory = this._directoryMap.get(path.value)!;
+                this.whenRequest(request).forEach(request => directory.item.push(request));
+            } else {
+                const directory = new PostmanDirectory(this.getDirectoryName(path), path.value, []);
+                this.whenRequest(request).forEach(request => directory.item.push(request))
+                this._directoryMap.set(path.value, directory);
             }
         }
-        //새로운 노드라서, 브랜치(디렉토리) 안으로 넣어야 하는경우
-        if (isNewNode) {
-            this.handleNewNode(branches, method, path, index, currentCursor, isDirectory);
-            return;
-        }
 
-        //디렉토리면서, 아직 순회할 경로가 남아있다면.
-        if (isDirectory && path.array.length > index) {
-            const directory = branches.find(node => node.path.value === currentCursor.value && node instanceof PostmanDirectory) as PostmanDirectory;
-            this.exploreNode(directory.item, method, path, index + 1);
-        }
+        return new PostmanImportFile(this._info, this.compactDirectories())
     }
 
-    private readonly handleNewNode = (branches: Array<IPostmanNode>, method: HttpMethod, path: Path, index: number, currentCursor: Path, isDirectory: boolean) => {
-        if (isDirectory) {
-            const directory = new PostmanDirectory(this.getDirectoryName(currentCursor), currentCursor.value, []);
-            branches.push(directory);
-            this.exploreNode(directory.item, method, path, index + 1);
-        } else {
-            this.addRequest(branches, currentCursor, method);
-        }
-    }
+    private readonly compactDirectories = (): Array<IPostmanNode> => {
+        return [...this._directoryMap.entries()]
+            .sort(([a], [b]) => a.localeCompare(b))
+            .reduce((root, [key, value]) => {
+                const path = new Path(key);
+                const startDepth = 0;
+                const rootChildPath = path.subset(startDepth);
+                let foundChild = root.find(node => node instanceof PostmanDirectory && node.path.equals(rootChildPath)) as PostmanDirectory;
 
-    private readonly addRequest = (branches: Array<IPostmanNode>, currentCursor: Path, method: HttpMethod) => {
-        const methodMap = this._group.get(currentCursor.value);
-        const request = methodMap?.get(method.value.toUpperCase());
+                if (!foundChild) {
+                    foundChild = new PostmanDirectory(rootChildPath.lastValue, rootChildPath.value, []);
+                    root.push(foundChild);
+                } else {
+                    foundChild.addNodeRecursive(path, value, startDepth +1);
+                }
 
-        if (currentCursor.value.startsWith('/v1/mission')) {
-            console.log(`[${currentCursor.value}:${method}] request`, request);
-        }
-
-        //exist in request map
-        if (request) {
-            this.whenRequest(request).forEach(request => branches.push(request));
-        }
+                return root;
+            }, this._nodes);
     }
 
     private readonly whenRequest = (spec: ApiSpecification) => {
         //NOTE: PathVariable과 RequestBody를 동시에 사용하는경우 요청이 두개가 생기므로 이럴경우 PathVariable을 사용하는 요청을 필터링한다.
         const hasRequestBody = spec.bodies.some(body => body instanceof RequestBody);
-        const hasFormData = spec.bodies.some(body => body instanceof Formdata);
-        const needFilterPathVariableRequest = hasFormData && hasRequestBody && spec.bodies.find(body => body instanceof Formdata)?.needExtract();
-        const parsableBodies = needFilterPathVariableRequest ? spec.bodies.filter(body => !(body instanceof Formdata)) : spec.bodies;
+        const hasFormData = spec.bodies.some(body => body instanceof Parameters);
+        const needFilterPathVariableRequest = hasFormData && hasRequestBody && spec.bodies.find(body => body instanceof Parameters)?.needExtract();
+        const parsableBodies = needFilterPathVariableRequest
+            ? spec.bodies.filter(body => !(body instanceof Parameters))
+            : spec.bodies;
 
-        return parsableBodies.map(body => this.extractBody(body, spec.path)).map(bodyWrapper => {
-            const headers = this._configures.headers;
-            headers.push(...bodyWrapper.headers);
-            const request = new PostmanRequest(
-                spec.method,
-                headers,
-                bodyWrapper,
-                PostmanUrl.of(this._configures.host, spec.path.value)
-            );
-            return new PostmanRequestWrapper(spec.summary, request)
-        });
+        //TODO Path Variable 처리 필요.
+        return parsableBodies.map(body => this.extractBody(body, spec.path))
+            .map(bodyWrapper => {
+                const headers = this._configures.headers;
+                headers.push(...bodyWrapper.headers);
+                const request = new PostmanRequest(
+                    spec.method,
+                    headers,
+                    PostmanUrl.of(this._configures.host, spec.path.value),
+                    bodyWrapper
+                );
+                return new PostmanRequestWrapper(spec.summary, request)
+            });
+    }
+
+    private readonly extractBody = (parsable: IParsable, path: Path) => {
+        if (parsable instanceof RequestBody) {
+            return this.extractRequestBody(parsable, path);
+        } else if (parsable instanceof Parameters) {
+            return this.extractParameters(parsable, path);
+        } else if (parsable instanceof EmptyBody) {
+            return this.extractEmptyBody(path);
+        }
+        throw new Error("Not supported parsable type");
     }
 
     private extractRequestBody(parsable: IParsable, path: Path) {
@@ -187,20 +150,19 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         return PostmanBodyWrapper.fromRaw(wrappedBody);
     }
 
-    private extractFormdata(parsable: IParsable, path: Path) {
-        const formdata = parsable as Formdata;
-        const parameters = formdata.parameters.concat(this._configures.getDefaultParameters(path));
+    private extractParameters(parsable: IParsable, path: Path) {
+        const parameters = parsable as Parameters;
+        const headers = PostmanHeader.ofParameters(parameters.getValues(InType.HEADER))
+            .concat(this._configures.headers);
+        const queryParameters = parameters.getValues(InType.QUERY)
+            .concat(this._configures.getDefaultParameters(path));
 
-        const data = parameters
-            .filter(param => param.in.value !== InType.HEADER.value)
-            .map(this.toPostmanFormData);
-        const headers = parameters.filter(param => param.in.value === InType.HEADER.value);
+        const data = queryParameters.map(this.toPostmanFormData);
+
         //TODO Header Accumulation
         const bodyWrapper = PostmanBodyWrapper.fromFormData(data);
-        bodyWrapper.headers = headers.map(header => new PostmanHeader(
-            header.name,
-            DefaultValue.fromTypeFormat(header.type, header.format).value
-        ))
+        bodyWrapper.headers = headers
+        bodyWrapper.url
         return bodyWrapper;
     }
 
@@ -209,17 +171,6 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         return Array.isArray(defaultBody)
             ? PostmanBodyWrapper.fromFormData(defaultBody.map(this.toPostmanFormData))
             : PostmanBodyWrapper.fromRaw(defaultBody);
-    }
-
-    private readonly extractBody = (parsable: IParsable, path: Path) => {
-        if (parsable instanceof RequestBody) {
-            return this.extractRequestBody(parsable, path);
-        } else if (parsable instanceof Formdata) {
-            return this.extractFormdata(parsable, path);
-        } else if (parsable instanceof EmptyBody) {
-            return this.extractEmptyBody(path);
-        }
-        throw new Error("Not supported parsable type");
     }
 
     private readonly toPostmanFormData = (parameter: Parameter): PostmanFormdata => {

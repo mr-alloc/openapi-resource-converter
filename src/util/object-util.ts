@@ -1,4 +1,5 @@
-export function toProps(object: any | undefined) {
+
+export function toProps(object: any | undefined): Array<Property> {
     return Object.entries(object ?? {}).map(([key, value]) => new Property(key, value));
 }
 
@@ -24,22 +25,39 @@ function checkPathRecursive(property: Array<Property>, tokens: Array<string>, in
     return parseTarget !== undefined;
 }
 
-export function getProps(object: any | undefined, tokens: Array<string>): Array<Property> {
+export function getDeepProps(object: any | undefined, tokens: Array<string>): Array<Property> {
     if (tokens.length === 0) {
         return toProps(object);
     }
 
-    return getPropsRecursive(object, tokens, 0);
+    return getDeepPropsRecursive(object, tokens, 0);
 }
 
-function getPropsRecursive(property: any, tokens: Array<string>, index: number): Array<Property> {
+function getDeepPropsRecursive(property: any, tokens: Array<string>, index: number): Array<Property> {
     const parseTarget = property?.[tokens[index]];
     const hasDepth = tokens.length - 1 > index;
     if (hasDepth && parseTarget) {
-        return getPropsRecursive(parseTarget, tokens, index + 1);
+        return getDeepPropsRecursive(parseTarget, tokens, index + 1);
     }
 
     return toProps(parseTarget);
+}
+
+export function getDeepProp(object: any = {}, tokens: Array<string>): Property {
+    if (tokens.length === 0) {
+        return new Property('', object);
+    }
+
+    return getDeepPropRecursive(object, tokens, 0);
+}
+
+function getDeepPropRecursive(property: any, tokens: Array<string>, index: number): Property {
+    const parseTarget = property?.[tokens[index]];
+    const hasDepth = tokens.length -1 > index;
+    if (hasDepth && parseTarget) {
+        return getDeepPropRecursive(parseTarget, tokens, index +1);
+    }
+    return new Property(tokens[index], parseTarget);
 }
 
 export function hasProp(object: any | undefined, key: string): boolean {
