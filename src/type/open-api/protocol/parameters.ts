@@ -1,8 +1,7 @@
 import Parameter from "@/type/open-api/sub/parameter";
-import IParsable from "@/type/open-api/protocol/i-parsable";
 import InType from "@/type/open-api/constant/in-type";
 
-export default class Parameters implements IParsable {
+export default class Parameters {
 
     private readonly _values: Array<Parameter>
 
@@ -12,10 +11,6 @@ export default class Parameters implements IParsable {
 
     get values(): Array<Parameter> {
         return this._values;
-    }
-
-    public needExtract(): boolean {
-        return this._values.some(param => param.in.value === InType.PATH.value);
     }
 
     public getValues(inType: InType) {

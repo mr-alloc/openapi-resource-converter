@@ -11,13 +11,12 @@ export default class PostmanFormdata {
         this._description = description
     }
 
-    toJSON() {
+    public toJSON() {
         return {
-            "key": this._key,
-            "value": this._value,
-            "type": this._type,
-            "description": this._description
+            key: this._key,
+            value: this._value,
+            type: this._type,
+            description: this._description
         }
-
     }
 }

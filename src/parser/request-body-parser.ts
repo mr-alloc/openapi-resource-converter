@@ -1,4 +1,3 @@
-import IParser from "@/parser/i-parser";
 import RequestBody from "@/type/open-api/protocol/request-body";
 import NamedLiteral from "@/type/open-api/constant/named-literal";
 import ValueField from "@/type/open-api/sub/value-field";
@@ -6,12 +5,10 @@ import DataType from "@/type/open-api/constant/data-type";
 import DataFormat from "@/type/open-api/constant/data-format";
 import IField from "@/type/open-api/sub/i-field";
 import ObjectField from "@/type/open-api/sub/object-field";
-import ProtocolType from "@/type/open-api/constant/protocol-type";
-import {getProp, getPropOrDefault, getDeepProps, hasProp, Property, getDeepProp} from "@/util/object-util";
+import {getDeepProp, getDeepProps, getProp, getPropOrDefault, hasDeepProp, hasProp, Property} from "@/util/object-util";
+import EmptyBody from "@/type/open-api/protocol/empty-body";
 
-export default class RequestBodyParser implements IParser<RequestBody> {
-
-    private static readonly CONTENT_TYPE = "application/json"
+export default class RequestBodyParser {
     private static INSTANCE: RequestBodyParser = new RequestBodyParser();
     private constructor() {}
 
@@ -19,8 +16,12 @@ export default class RequestBodyParser implements IParser<RequestBody> {
         return RequestBodyParser.INSTANCE;
     }
 
-    public parse(metadata: Property, protocol: ProtocolType, components: Map<string, Array<IField>>): RequestBody {
-        const contentType = RequestBody.findContentType(protocol);
+    public parse(metadata: Property, components: Map<string, Array<IField>>): RequestBody | EmptyBody {
+        const contentType = RequestBody.ALLOW_CONTENT_TYPES
+            .find(contentType => hasDeepProp(metadata.value, ['content', contentType]));
+        if (!contentType) {
+            return new EmptyBody();
+        }
 
         //schema 의 필드 값들
         const schemaProperties = getDeepProps(metadata.value, ['content', contentType, 'schema']);

@@ -1,15 +1,9 @@
-import IParsable from "@/type/open-api/protocol/i-parsable";
-
-export default class EmptyBody implements IParsable {
+export default class EmptyBody {
 
     constructor() {
     }
 
     public toString() {
         return '(empty)';
-    }
-
-    public needExtract(): boolean {
-        return false;
     }
 }

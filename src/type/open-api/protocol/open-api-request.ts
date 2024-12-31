@@ -1,59 +1,36 @@
 import HttpMethod from "@/type/open-api/constant/http-method";
-import {Property, toProps} from "@/util/object-util";
+import {getProp, hasProp, Property} from "@/util/object-util";
 import ProtocolType from "@/type/open-api/constant/protocol-type";
-import Path from "@/type/path";
 
 export default class OpenApiRequest {
 
-    private readonly _method: HttpMethod;
     private readonly _path: string;
-    private readonly _metadata: Array<Property>;
+    private readonly _method: HttpMethod;
+    private readonly _metadata: Property;
 
-    private constructor(method: string, path: string, metadata: Array<Property>) {
-        this._method = HttpMethod.fromValue(method);
+    public constructor(path: string, metadata: Property) {
         this._path = path;
+        this._method = HttpMethod.fromValue(metadata.name);
         this._metadata = metadata;
-    }
-
-    get method(): HttpMethod {
-        return this._method;
     }
 
     get path(): string {
         return this._path;
     }
 
-    get metadata(): Array<Property> {
+    get method(): HttpMethod {
+        return this._method;
+    }
+
+    get metadata(): Property {
         return this._metadata;
     }
 
-    get summary(): string {
-        const found = this._metadata.find((prop) => prop.name === ProtocolType.SUMMARY.value);
-        return found?.value
-            ?? Path.ofValue(this._path).lastValue;
-    }
-
-    get metadataProtocols(): Array<ProtocolType> {
-        //meta는 summary, operationId, requestBody, parameters, responses로 구성
-        return this._metadata.map((prop) => prop.name)
-            .filter((name) => ProtocolType.isProtocolFormat(name))
-            .map((name) => ProtocolType.fromValue(name)!);
-    }
-
-    public static parse(path: string, methodProperty: Property): OpenApiRequest {
-        return new OpenApiRequest(
-            methodProperty.name,
-            path,
-            toProps(methodProperty.value)
-        );
-    }
-
-    public metadataOf(protocol: ProtocolType): Property {
-        const found = this._metadata.find((prop) => prop.name === protocol.value);
-        if (found) {
-            return found;
+    public payloadOf(protocol: ProtocolType): Property | undefined {
+        if (!hasProp(this._metadata.value, protocol.value)) {
+            return undefined;
         }
 
-        throw new Error(`Not found metadata with protocol: ${protocol.value}`);
+        return new Property(protocol.value, getProp<any>(this._metadata.value, protocol.value));
     }
 }

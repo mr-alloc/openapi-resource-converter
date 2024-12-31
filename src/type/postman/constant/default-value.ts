@@ -9,6 +9,7 @@ export default class DefaultValue {
     private static readonly INT = new DefaultValue(DataType.INTEGER, DataFormat.INT32, "0", parseInt);
     private static readonly LONG = new DefaultValue(DataType.INTEGER, DataFormat.INT64, "0", parseInt);
     private static readonly BOOLEAN = new DefaultValue(DataType.BOOLEAN, DataFormat.NONE, "false", (value: string) => value === 'true');
+    private static readonly ARRAY = new DefaultValue(DataType.ARRAY, DataFormat.NONE, "[]", JSON.parse);
 
     private readonly _type: DataType;
     private readonly _format: DataFormat;
@@ -54,6 +55,8 @@ export default class DefaultValue {
                 }
             case DataType.BOOLEAN:
                 return DefaultValue.BOOLEAN;
+            case DataType.ARRAY:
+                return DefaultValue.ARRAY;
             default:
                 return DefaultValue.STRING;
         }
