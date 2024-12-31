@@ -71,7 +71,7 @@ postman:
 변환에서 제외할 경로를 설정합니다.
 ```yaml
 postman:
-  excludePaths:
+  exclude-paths:
     - "/foo/*/move"
     - "/bar/internal/**"
     - "/"
