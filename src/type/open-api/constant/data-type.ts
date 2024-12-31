@@ -1,13 +1,14 @@
-import { toMap } from "@/util/collection-util";
+import {toMap} from "@/util/collection-util";
 
 export default class DataType {
 
-    static readonly STRING = new DataType("string");
-    static readonly NUMBER = new DataType("number");
-    static readonly INTEGER = new DataType("integer");
-    static readonly BOOLEAN = new DataType("boolean");
-    static readonly OBJECT = new DataType("object");
-    static readonly NONE = new DataType("none");
+    public static readonly STRING = new DataType("string");
+    public static readonly NUMBER = new DataType("number");
+    public static readonly INTEGER = new DataType("integer");
+    public static readonly BOOLEAN = new DataType("boolean");
+    public static readonly OBJECT = new DataType("object");
+    public static readonly ARRAY = new DataType("array");
+    public static readonly NONE = new DataType("none");
 
     private static readonly CACHED = toMap(DataType.values(), (dataType) => dataType.value);
     private readonly _value: string;
@@ -26,6 +27,7 @@ export default class DataType {
             DataType.INTEGER,
             DataType.BOOLEAN,
             DataType.OBJECT,
+            DataType.ARRAY,
             DataType.NONE
         )
     }

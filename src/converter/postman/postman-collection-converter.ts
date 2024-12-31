@@ -11,9 +11,6 @@ import Path from "@/type/path";
 import PostmanDirectory from "@/type/postman/postman-directory";
 import PostmanRequest from "@/type/postman/postman-request";
 import PostmanUrl from "@/type/postman/postman-url";
-import PostmanRequestWrapper from "@/type/postman/postman-request-wrapper";
-import IParsable from "@/type/open-api/protocol/i-parsable";
-import RequestBody from "@/type/open-api/protocol/request-body";
 import PostmanBodyWrapper from "@/type/postman/postman-body-wrapper";
 import Parameters from "@/type/open-api/protocol/parameters";
 import PostmanFormdata from "@/type/postman/postman-formdata";
@@ -27,7 +24,6 @@ import ValueField from "@/type/open-api/sub/value-field";
 import CaseMode from "@/type/postman/constant/case-mode";
 import Parameter from "@/type/open-api/sub/parameter";
 import InType from "@/type/open-api/constant/in-type";
-import PostmanHeader from "@/type/postman/postman-header";
 import PostmanPathVariable from "@/type/postman/postman-path-variable";
 
 export default class PostmanCollectionConverter implements IOpenapiConverter {
@@ -70,21 +66,32 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
             const path = spec.path;
 
             const methodMap = this._group.get(path.value);
-            const request = methodMap?.get(method.value.toUpperCase())!;
+            const specification = methodMap?.get(method.value.toUpperCase())!;
             const existDirectory = this._directoryMap.has(path.value);
 
-            //디렉토리가 이미 생성된 경우
-            if (existDirectory) {
-                const directory = this._directoryMap.get(path.value)!;
-                this.whenRequest(request).forEach(request => directory.item.push(request));
-            } else {
-                const directory = new PostmanDirectory(this.getDirectoryName(path), path.value, []);
-                this.whenRequest(request).forEach(request => directory.item.push(request))
+            const directory = existDirectory
+                ? this._directoryMap.get(path.value)!
+                : new PostmanDirectory(this.getDirectoryName(path), path.value, []);
+
+            const postmanRequest = this.toPostmanRequest(specification);
+            directory.addRequest(specification.summary, postmanRequest);
+
+            //디렉토리가 없는 경우
+            if (!existDirectory) {
                 this._directoryMap.set(path.value, directory);
             }
         }
 
         return new PostmanImportFile(this._info, this.compactDirectories())
+    }
+
+
+    private readonly toPostmanRequest = (spec: ApiSpecification): PostmanRequest => {
+        const pathVariables = spec.hasParameters ? this.extractPathVariables(spec.parameters!) : [];
+        const url = new PostmanUrl(this._configures.host, spec.path, pathVariables);
+        const body = this.extractRequestBody(spec);
+
+        return new PostmanRequest(spec.method, this._configures.headers, url, body);
     }
 
     private readonly compactDirectories = (): Array<IPostmanNode> => {
@@ -107,31 +114,8 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
             }, this._nodes);
     }
 
-    private readonly whenRequest = (spec: ApiSpecification) => {
-        //NOTE: PathVariable과 RequestBody를 동시에 사용하는경우 요청이 두개가 생기므로 이럴경우 PathVariable을 사용하는 요청을 필터링한다.
-        const hasRequestBody = spec.bodies.some(body => body instanceof RequestBody);
-        const hasFormData = spec.bodies.some(body => body instanceof Parameters);
-        const needFilterPathVariableRequest = hasFormData && hasRequestBody && spec.bodies.find(body => body instanceof Parameters)?.needExtract();
-        const parsableBodies = needFilterPathVariableRequest
-            ? spec.bodies.filter(body => !(body instanceof Parameters))
-            : spec.bodies;
-
-        //TODO Path Variable 처리 필요.
-        return parsableBodies
-            .map(body => {
-                const bodyWrapper = this.extractBody(body, spec.path);
-                const url = new PostmanUrl(this._configures.host, spec.path, this.extractPathVariables(body));
-                const request = new PostmanRequest(spec.method, this._configures.headers, url, bodyWrapper);
-                return new PostmanRequestWrapper(spec.summary, request)
-            });
-    }
-
-    private readonly extractPathVariables = (body: IParsable): Array<PostmanPathVariable> => {
-        if (!(body instanceof Parameters)) {
-            return [];
-        }
-
-        const pathVariables = (body as Parameters).getValues(InType.PATH);
+    private readonly extractPathVariables = (parameters: Parameters): Array<PostmanPathVariable> => {
+        const pathVariables = parameters.getValues(InType.PATH);
         if (pathVariables.length === 0) {
             return [];
         }
@@ -139,54 +123,39 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         return PostmanPathVariable.ofParameters(pathVariables);
     }
 
-    private readonly extractBody = (parsable: IParsable, path: Path) => {
-        if (parsable instanceof RequestBody) {
-            return this.extractRequestBody(parsable, path);
-        } else if (parsable instanceof Parameters) {
-            return this.extractParameters(parsable, path);
-        } else if (parsable instanceof EmptyBody) {
-            return this.extractEmptyBody(path);
+    private readonly extractRequestBody = (specification: ApiSpecification): PostmanBodyWrapper | undefined => {
+        //form data 의 경우
+        if (specification.hasParameters) {
+            const parameters = specification.parameters!;
+            const queryParameters = parameters.getValues(InType.QUERY)
+                .concat(this._configures.getDefaultParameters(specification.path));
+
+            const formdata = this.toPostmanFormData(queryParameters);
+
+            return PostmanBodyWrapper.fromFormData(formdata);
         }
-        throw new Error("Not supported parsable type");
+
+
+        //Request Body 또는 비어있는 경우
+        if (specification.requestBody instanceof EmptyBody) {
+            return undefined;
+        } else {
+            const rawBody = this.toPostmanRawBody(specification.requestBody.fields);
+            const wrappedBody = this._configures.wrappingBody(specification.path, rawBody);
+
+            return PostmanBodyWrapper.fromRaw(wrappedBody);
+        }
     }
 
-    private extractRequestBody(parsable: IParsable, path: Path) {
-        const requestBody = parsable as RequestBody;
-        const rawBody = this.toPostmanRawBody(requestBody.fields);
+    private readonly toPostmanFormData = (queryParameters: Array<Parameter>): Array<PostmanFormdata> => {
+        return queryParameters.map(parameter => {
+            const parameterKey = CaseMode.to(parameter.name, this._configures.casingMode);
+            const value = this._configures.valuePlaceholder.has(parameterKey)
+                ? `{{${this._configures.valuePlaceholder.get(parameterKey)}}}`
+                : DefaultValue.fromTypeFormat(parameter.type, parameter.format).value;
 
-        const wrappedBody = this._configures.wrappingBody(path, rawBody);
-
-        return PostmanBodyWrapper.fromRaw(wrappedBody);
-    }
-
-    private extractParameters(parsable: IParsable, path: Path) {
-        const parameters = parsable as Parameters;
-        const queryParameters = parameters.getValues(InType.QUERY)
-            .concat(this._configures.getDefaultParameters(path));
-
-        const data = queryParameters.map(this.toPostmanFormData);
-
-        return PostmanBodyWrapper.fromFormData(data);
-    }
-
-    private extractEmptyBody(path: Path) {
-        const defaultBody = this._configures.wrappingBody(path, {});
-        return Array.isArray(defaultBody)
-            ? PostmanBodyWrapper.fromFormData(defaultBody.map(this.toPostmanFormData))
-            : PostmanBodyWrapper.fromRaw(defaultBody);
-    }
-
-    private readonly toPostmanFormData = (parameter: Parameter): PostmanFormdata => {
-        const parameterKey = CaseMode.to(parameter.name, this._configures.casingMode);
-        const value = this._configures.valuePlaceholder.has(parameterKey)
-            ? `{{${this._configures.valuePlaceholder.get(parameterKey)}}}`
-            : DefaultValue.fromTypeFormat(parameter.type, parameter.format).value;
-        return new PostmanFormdata(
-            parameterKey,
-            value,
-            "text",
-            parameter.description
-        )
+            return new PostmanFormdata(parameterKey, value, "text", parameter.description)
+        });
     }
 
     private readonly toPostmanRawBody = (fields: Array<IField>): IPostmanRequestBody => {

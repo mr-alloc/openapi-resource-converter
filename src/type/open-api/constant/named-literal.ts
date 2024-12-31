@@ -7,5 +7,8 @@ export default {
     TYPE: "type",
     DESCRIPTION: "description",
     FORMAT: "format",
-    EXAMPLE: "example"
+    EXAMPLE: "example",
+    SUMMARY: "summary",
+    TAGS: "tags",
+    OPERATION_ID: "operationId"
 }

@@ -3,16 +3,17 @@ import {toJson} from "@/util/string-util";
 import Version from "@/type/open-api/sub/version";
 import ProjectInformation from "@/type/open-api/project/project-information";
 import Tag from "@/type/open-api/sub/tag";
-import {checkPath, Property, toProps} from "@/util/object-util";
+import {applyOrDefault, Property, toProps} from "@/util/object-util";
 import OpenApiRequest from "@/type/open-api/protocol/open-api-request";
-import IParsable from "@/type/open-api/protocol/i-parsable";
 import ApiSpecification from "@/type/open-api/api-specification";
-import ParserFactory from "@/parser/parser-factory";
 import EmptyBody from "@/type/open-api/protocol/empty-body";
 import OpenApiSpecification from "@/type/open-api/open-api-specification";
 import ComponentParser from "@/parser/component-parser";
 import IField from "@/type/open-api/sub/i-field";
-
+import ProtocolType from "@/type/open-api/constant/protocol-type";
+import RequestBody from "@/type/open-api/protocol/request-body";
+import RequestBodyParser from "@/parser/request-body-parser";
+import ParametersParser from "@/parser/parameters-parser";
 
 
 export default class OpenApiParser {
@@ -76,7 +77,7 @@ export default class OpenApiParser {
 
             //각 메소드 별로
             for (const methodProperty of methodProperties) {
-                result.push(OpenApiRequest.parse(pathProperty.name, methodProperty));
+                result.push(new OpenApiRequest(pathProperty.name, methodProperty));
             }
         }
 
@@ -87,29 +88,19 @@ export default class OpenApiParser {
         const specs = new Array<ApiSpecification>();
         //각 요청별로
         for (const request of requests) {
-            const summary = request.summary;
-            const bodies = new Array<IParsable>();
+            const requestBodyProperty = request.payloadOf(ProtocolType.REQUEST_BODY);
+            const requestBody = applyOrDefault<Property, RequestBody | EmptyBody>(
+                requestBodyProperty,
+                new EmptyBody(),
+                (property) => {
+                    return RequestBodyParser.getInstance().parse(property, this._components);
+                });
 
-            //요청내 요청값 별로 (request body, parameters, form data...)
-            for (const protocol of request.metadataProtocols) {
-                const metadata = request.metadataOf(protocol);
-                const parser = ParserFactory.getInstance().getParser(protocol);
-                if (! parser) continue;
-
-                //각 토큰 별로 (요청값 별로 토큰이 나눠져 있음으로 한번 더 반복이 필요없음
-                const parsable = parser.parse(metadata, protocol, this._components);
-
-                bodies.push(parsable);
-            }
+            const parametersProperty = request.payloadOf(ProtocolType.PARAMETERS);
+            const parameters = ParametersParser.getInstance().parse(parametersProperty);
 
             //요청 파라미터 정보가 없어도, 빈 요청을 생성한다.
-            specs.push(new ApiSpecification(
-                request.method,
-                request.path,
-                summary,
-                (bodies.length === 0 ? [new EmptyBody()] : bodies)
-            ));
-
+            specs.push(new ApiSpecification(request, requestBody, parameters));
         }
 
         return specs;

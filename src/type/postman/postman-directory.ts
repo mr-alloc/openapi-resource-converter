@@ -1,5 +1,7 @@
 import IPostmanNode from "@/type/postman/i-postman-node";
 import Path from "@/type/path";
+import PostmanRequest from "@/type/postman/postman-request";
+import PostmanRequestWrapper from "@/type/postman/postman-request-wrapper";
 
 export default class PostmanDirectory implements IPostmanNode {
     private readonly _name: string;
@@ -57,5 +59,9 @@ export default class PostmanDirectory implements IPostmanNode {
         }
 
         directory.addNodeRecursive(path, value, depth +1);
+    }
+
+    public addRequest(name: string, postmanRequest: PostmanRequest) {
+        this._item.push(new PostmanRequestWrapper(name, postmanRequest));
     }
 }

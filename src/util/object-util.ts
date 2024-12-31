@@ -64,6 +64,23 @@ export function hasProp(object: any | undefined, key: string): boolean {
     return object && object[key] !== undefined;
 }
 
+export function hasDeepProp(object: any | undefined, tokens: Array<string>) {
+    if (!object || tokens.length === 0) {
+        return false;
+    }
+
+    return hasDeepPropRecursive(object, tokens, 0);
+}
+
+function hasDeepPropRecursive(property: any, tokens: Array<string>, index: number): boolean {
+    const parseTarget = property?.[tokens[index]];
+    const hasDepth = tokens.length - 1 > index;
+    if (hasDepth && parseTarget) {
+        return hasDeepPropRecursive(parseTarget, tokens, index + 1);
+    }
+    return parseTarget !== undefined;
+}
+
 export function getProp<T>(object: any | undefined, key: string): T {
     return object[key]! as T;
 }
@@ -88,6 +105,14 @@ function getPropRecursiveInternal<T>(object: any, tokens: Array<string>, index: 
     }
 
     return parseTarget;
+}
+
+export function applyOrDefault<I, D>(object: I | undefined | null, defaultValue: D, applyFunction: (input: I) => D) {
+    if (object) {
+        return applyFunction(object);
+    }
+
+    return defaultValue;
 }
 
 
