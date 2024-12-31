@@ -30,17 +30,6 @@ export default class PostmanDirectory implements IPostmanNode {
         return this._item.find(node => node.path.value === other.value && node instanceof PostmanDirectory) as PostmanDirectory;
     }
 
-    public addDirectory(directory: PostmanDirectory) {
-        return this._item.push(directory);
-    }
-
-    public toJSON() {
-        return {
-            name: this._name,
-            item: this._item
-        }
-    }
-
     public addNodeRecursive(path: Path, value: PostmanDirectory, depth: number) {
         const current = path.subset(depth);
 
@@ -63,5 +52,12 @@ export default class PostmanDirectory implements IPostmanNode {
 
     public addRequest(name: string, postmanRequest: PostmanRequest) {
         this._item.push(new PostmanRequestWrapper(name, postmanRequest));
+    }
+
+    public toJSON() {
+        return {
+            name: this._name,
+            item: this._item
+        }
     }
 }
