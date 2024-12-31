@@ -18,8 +18,8 @@ export default class PostmanRequestWrapper implements IPostmanNode {
 
     toJSON() {
         return {
-            "name": this._name,
-            "request": this._request
+            name: this._name,
+            request: this._request
         }
     }
 }

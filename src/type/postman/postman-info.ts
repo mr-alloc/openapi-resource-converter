@@ -4,7 +4,7 @@ export default class PostmanInfo {
     private readonly _schema: string;
     private readonly _exporterId: string;
 
-    constructor(postmanId: string, name: string, schema: string, exporterId: string) {
+    public constructor(postmanId: string, name: string, schema: string, exporterId: string) {
         this._postmanId = postmanId
         this._name = name
         this._schema = schema
@@ -30,12 +30,12 @@ export default class PostmanInfo {
     /**
      * For Serialize
      */
-    toJSON() {
+    public toJSON() {
         return {
-            "_postman_id": this._postmanId,
-            "name": this._name,
-            "schema": this._schema,
-            "_exporter_id": this._exporterId
+            _postmanId: this._postmanId,
+            name: this._name,
+            schema: this._schema,
+            _exporter_id: this._exporterId
         }
     }
 }
