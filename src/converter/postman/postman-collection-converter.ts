@@ -127,10 +127,10 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         //form data 의 경우
         if (specification.hasParameters) {
             const parameters = specification.parameters!;
-            const queryParameters = parameters.getValues(InType.QUERY)
-                .concat(this._configures.getDefaultParameters(specification.path));
+            const queryParameters = parameters.getValues(InType.QUERY);
 
             const formdata = this.toPostmanFormData(queryParameters);
+            formdata.concat(this._configures.getDefaultParameters(specification.path))
 
             return PostmanBodyWrapper.fromFormData(formdata);
         }

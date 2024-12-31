@@ -1,5 +1,5 @@
 import {parse} from 'yaml';
-import {getProp, getDeepProps, hasProp, Property} from "@/util/object-util";
+import {getDeepProps, getProp, hasProp, Property} from "@/util/object-util";
 import PostmanHeader from "@/type/postman/postman-header";
 import CaseMode from "@/type/postman/constant/case-mode";
 import {isEmpty} from "@/util/string-util";
@@ -8,11 +8,8 @@ import TypeValue from "@/type/postman/type-value";
 import Path from "@/type/path";
 import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrapper-template";
 import RequestMode from "@/type/postman/constant/request-mode";
-import Parameter from "@/type/open-api/sub/parameter";
-import InType from "@/type/open-api/constant/in-type";
-import DataType from "@/type/open-api/constant/data-type";
-import DataFormat from "@/type/open-api/constant/data-format";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
+import PostmanFormdata from "@/type/postman/postman-formdata";
 
 export default class PostmanConfigParser {
 
@@ -163,12 +160,13 @@ export default class PostmanConfigParser {
             case RequestMode.RAW: {
                 const format = getProp<string>(wrapper, 'format');
                 return PostmanRequestWrapperTemplate.ofConfig(path, mode, (str: IPostmanRequestBody) => {
-                    return format.replace('${body}', JSON.stringify(str));
+                    //beautify in postman raw body
+                    return format.replace('${body}', JSON.stringify(str, null,));
                 });
             }
             case RequestMode.FORMDATA: {
                 const values = getProp<Array<any>>(wrapper, 'values');
-                const parameters = new Array<Parameter>();
+                const parameters = new Array<PostmanFormdata>();
                 for (const param of values) {
                     if (!hasProp(param, 'name') || !hasProp(param, 'value')) {
                         throw new Error('Invalid formdata parameter');
@@ -178,13 +176,11 @@ export default class PostmanConfigParser {
                     const type = getProp<string>(param, 'type');
                     const description = getProp<string>(param, 'description');
 
-                    parameters.push(new Parameter(
+                    parameters.push(new PostmanFormdata(
                         name,
-                        InType.QUERY,
+                        value,
+                        type,
                         description,
-                        true,
-                        DataType.fromValue(type),
-                        DataFormat.NONE
                     ));
                 }
                 return PostmanRequestWrapperTemplate.ofConfig(path, mode, undefined, parameters);
