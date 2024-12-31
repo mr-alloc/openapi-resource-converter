@@ -49,14 +49,16 @@ postman:
   ...
 ```
 
-*호스트 지정*
+#### 호스트 지정
+
 포스트맨 요청생성시 사용할 호스트를 지정합니다.
 ```yaml
 postman:
   host: "http://{{url}}" # 기본값: "{{url}}"
 ```
 
-*파라미터 키 케이스 설정*
+#### 파라미터 키 케이스 설정
+
 파라미터 키의 케이스를 설정합니다.
 사용 가능값: [`camel`, `snake`]
 ```yaml
@@ -64,7 +66,8 @@ postman:
   case: snake # 기본값: camel
 ```
 
-*제외 경로 설정*
+#### 제외 경로 설정
+
 변환에서 제외할 경로를 설정합니다.
 ```yaml
 postman:
@@ -74,7 +77,8 @@ postman:
     - "/"
 ```
 
-*기본 헤더 추가*
+#### 기본 헤더 추가
+
 모든 요청에 추가할 기본 헤더를 설정합니다.
 ```yaml
 postman:
@@ -83,13 +87,14 @@ postman:
     Content-Type: application/json
 ```
 
-*플레이스홀더 설정*
+#### 플레이스홀더 설정
+
 변환된 요청에 사용할 플레이스홀더를 설정합니다.
 포맷은 타입에따라 자동으로 적용됩니다.
 ```yaml
 postman:
   placeholders:
-    userId: "uid"
+    userId: uid
 ```
 결과:
 ```text
@@ -99,80 +104,82 @@ postman:
 }
 ```
 
+#### 요청 래핑 또는 기본값 추가
 
+생성되는 요청을 다른 객체로 감싸서 내부적인 프로토콜에 대응할 수 있습니다.
 
-## 사용법
+**JSON 형식의 내부 프로토콜**
 
-```typescript
-import OpenApiParser from "@/parser/OpenApiParser";
-import PostmanCollectionConverter from "@/converter/postman/PostmanCollectionConverter";
-import PostmanConvertConfigures from "@/converter/postman/PostmanConvertConfigures";
-import CaseMode from "@/type/postman/constant/CaseMode";
-import {writeNewFile} from "@/util/FileUtil";
+🚨 **`type`을 `raw`로 적용해야 합니다.**
 
-const openAPISpecification = OpenApiParser.parse('./resources/openapi.json');
-const configures = new PostmanConvertConfigures("{{url}}", CaseMode.CAMEL); 
-const converter = new PostmanCollectionConverter(openAPISpecification, configures);
+아래와 같이 옵션을 적용하는 경우 다음과 같이 `${body}`에 바인딩 되어 적용 됩니다.
 
-const path = `${process.cwd()}/static/postman.json`
-const converted = converter.convert();
-writeNewFile(path, JSON.stringify(converted, null, 2));
+```yaml
+postman:
+  request-wrapper:
+    - path: /api/v1/**
+      type: raw
+      format: |
+        {
+          "id": {{id}},
+          "app": "{{version}}",
+          "message": ${body}
+        }
 ```
+
+*AS IS*
+
+```
+{
+  "userId": {{userId}}
+}
+```
+
+*TO BE*
+
+/api/v1/users: `/api/v1/**`에 해당 되므로 옵션이 요청이 래핑됩니다.
+
+```
+{
+  "id": {{id}},
+  "app": "{{version}}",
+  "message": {
+    "userId": {{userId}}
+  }
+}
+```
+
+/api/v2/users: `/api/v1/**`에 해당되지 않으므로 그대로 출력됩니다.
+
+```
+{
+  "userId": {{userId}}
+}
+```
+
+**Formdata 형식의 파라미터 목록**
+
+🚨 **`type`을 `formdata`로 적용해야 합니다.**
+
+```yaml
+postman:
+  request-wrapper:
+    - path: /api/v1/**
+      type: formdata
+      values:
+        - name: token
+          description: 인증토큰
+          value: "{{token}}"
+        - name: timestamp
+          description: 클라이언트 시간
+          value: "{{timestamp}}"
+        - name: isAdult
+          description: 성인여부
+          value: "{{isAdult}}"
+```
+
+위와 같이 적용시 다른 formdata 파라미터와 함께 적용되어 아래와 같이 보여집니다.
+
+![Formdata 옵션](/images/formdata-option.png)
 
 ---
-
-## Options
-
-### Choose case mode for key of parameters
-```typescript
-const configures = new PostmanConvertConfigures("{{url}}", CaseMode.SNAKE); 
-```
-
-#### As is
-<img src="./images/asis_choose_case.png" width="300px" />
-
-#### To be
-<img src="images/tobe_choose_case.png" width="300px" />
-
-
-### Exclude Path
-```typescript
-configures.addExcludePaths(["/foo", "/bar", "/"]);
-```
-This options will be support for excluding as a using asterisk soon.
-
-### Wrapping Request Body
-```typescript
-configures.defaultBodyWrapper((path, method, body) => {
-    return {
-        version: "{{version}}",
-        value: body
-    } as IPostmanRequestBody;
-});
-```
-
-#### As is
-<img src="./images/asis_wrapping_body.png" width="300px" />
-
-#### To be
-<img src="images/tobe_wrapping_body.png" width="300px" />
-
-
-### Add Placeholders
-
-```typescript
-configures.addPlaceholders(new Map<string, any>([
-    ['email', 'custom_email'],
-]))
-```
-
-#### As is
-<img src="./images/asis_add_placeholder.png" width="300px" />
-
-#### To be
-<img src="images/tobe_add_placeholder.png" width="300px" />
-
----
-
-## Convert your openapi spec right now!!
-![Convert your Open API3 Spec right now!](./images/convert_right_now.png)

@@ -1,10 +1,12 @@
+declare type FormdataType = 'text' | 'file';
+
 export default class PostmanFormdata {
     private readonly _key: string;
     private readonly _value: string;
-    private readonly _type: string;
+    private readonly _type: FormdataType;
     private readonly _description: string;
 
-    constructor(key: string, value: string, type: string, description: string) {
+    public constructor(key: string, value: string, type: FormdataType, description: string) {
         this._key = key
         this._value = value
         this._type = type

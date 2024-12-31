@@ -173,15 +173,9 @@ export default class PostmanConfigParser {
                     }
                     const name = getProp<string>(param, 'name');
                     const value = getProp<string>(param, 'value');
-                    const type = getProp<string>(param, 'type');
                     const description = getProp<string>(param, 'description');
 
-                    parameters.push(new PostmanFormdata(
-                        name,
-                        value,
-                        type,
-                        description,
-                    ));
+                    parameters.push(new PostmanFormdata(name, value, 'text', description,));
                 }
                 return PostmanRequestWrapperTemplate.ofConfig(path, mode, undefined, parameters);
             }
