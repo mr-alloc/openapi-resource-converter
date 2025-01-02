@@ -13,10 +13,17 @@
   "bin": {
     "orc": "./dist/index.js"
   },
-  "keywords": [],
+  "keywords": [
+    "openapi",
+    "postman",
+    "converter"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "This is a tool to convert OpenAPI 3.0 resources to TypeScript classes, ",
+  "description": "This is a tool to convert OpenAPI 3.0 resources.",
+  "bugs": {
+    "email": "mr.allocater@gmail.com"
+  },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
     "cross-env": "^7.0.3",
