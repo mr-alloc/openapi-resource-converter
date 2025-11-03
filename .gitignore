@@ -1,0 +1,8 @@
+/node_modules/
+/.idea/
+/package-lock.json
+/static/
+/resources/openapi.json
+/yarn.lock
+/dist/
+/.yarn/
