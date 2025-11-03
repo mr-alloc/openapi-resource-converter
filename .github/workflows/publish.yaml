@@ -2,12 +2,11 @@ name: Publish to npm
 on:
   push:
     tags:
-      - 'v*'  # 태그 push도 지원
+      - 'v*'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.event.release.target_commitish == 'master'
     permissions:
       contents: write
 
