@@ -1,6 +1,6 @@
 {
   "name": "openapi-resource-converter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "index.ts",
   "scripts": {
     "clean": "shx rm -rf dist src/**/*.js",
