@@ -93,7 +93,13 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         const url = new PostmanUrl(this._configures.host, spec, pathVariables);
         const body = this.extractRequestBody(spec);
 
-        return new PostmanRequest(spec.method, this._configures.headers, url, body);
+        const defaultTemplateHeaders = this._configures.getDefaultHeaders(spec.path);
+        const globalHeaders = toMap(this._configures.headers, header => header.key);
+        //요청 단위 헤더가 더 우선 순위
+        for (const overwrite of defaultTemplateHeaders) {
+            globalHeaders.set(overwrite.key, overwrite);
+        }
+        return new PostmanRequest(spec.method, [...globalHeaders.values()], url, body);
     }
 
     private readonly compactDirectories = (): Array<IPostmanNode> => {

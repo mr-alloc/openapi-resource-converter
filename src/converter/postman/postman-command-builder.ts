@@ -22,7 +22,7 @@ export default class PostmanCommandBuilder {
 
         this.applyConfigOption();
         if (option.lint === true) {
-            console.log('Lint Mode')
+            console.log('Lint Configuration');
             return;
         }
         this.applyFileOption();
@@ -71,6 +71,9 @@ export default class PostmanCommandBuilder {
             ? configParser.parse(readFile(this._option.config!)) : ParsedPostmanOption.ofDefault();
 
         if (this._option.lint === true) {
+            if (!this._option.config) {
+                console.log('Configuration is not specified for lint.');
+            }
             parsedPostmanOption.printStatus();
             return;
         }

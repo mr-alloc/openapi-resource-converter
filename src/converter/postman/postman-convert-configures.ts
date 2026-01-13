@@ -74,6 +74,24 @@ export default class PostmanConvertConfigures {
             .map(matched => matched.event!);
     }
 
+    public getDefaultHeaders(path: Path): Array<PostmanHeader> {
+        const found = this._defaultRequestWrappers.filter(template =>
+            template.path.matches(path));
+        const accumulated =  found
+            .filter(matched => matched.headers?.length! > 0)
+            .reduce((pre, cur) => {
+                if (cur.headers) {
+                    for (const header of cur.headers) {
+                        //덮어쓰기
+                        pre.set(header.key, header);
+                    }
+                }
+                return pre;
+            }, new Map<string, PostmanHeader>())
+            .values();
+        return [...accumulated];
+    }
+
 
     public applyPostmanOption(parsedPostmanOption: ParsedPostmanOption) {
         this._host = parsedPostmanOption.host;

@@ -55,7 +55,11 @@ export default class PostmanDirectory implements IPostmanNode {
         directory.addNodeRecursive(path, value, depth +1);
     }
 
-    public addRequest(name: string, postmanRequest: PostmanRequest, postmanEvent?: Array<PostmanEvent>) {
+    public addRequest(
+        name: string,
+        postmanRequest: PostmanRequest,
+        postmanEvent?: Array<PostmanEvent>
+    ) {
         this._item.push(new PostmanRequestWrapper(name, postmanRequest, postmanEvent));
     }
 

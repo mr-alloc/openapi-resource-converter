@@ -1,5 +1,6 @@
 import Parameter from "@/type/open-api/sub/parameter";
 import DefaultValue from "@/type/postman/constant/default-value";
+import { inspect } from 'util';
 
 export default class PostmanHeader {
     private readonly _key: string;
@@ -10,21 +11,27 @@ export default class PostmanHeader {
         this._value = value
     }
 
-    getSeparatedValues(): Array<string> {
-        return this._value
-            .split(';')
-            .map(value => value.trim())
+    get key(): string {
+        return this._key;
     }
 
-    toJSON() {
+    get value(): string {
+        return this._value;
+    }
+
+    public toJSON() {
         return {
             "key": this._key,
             "value": this._value
         }
     }
 
+    [inspect.custom]() {
+        return `"${this._key}": "${this._value}"`;
+    }
+
     public toString() {
-        return `${this._key}: ${this._value}`;
+        return `"${this._key}": "${this._value}"`;
     }
 
     public static ofParameters(parameters: Array<Parameter>): Array<PostmanHeader> {

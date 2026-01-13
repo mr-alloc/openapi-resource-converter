@@ -1,4 +1,5 @@
 import {minimatch} from "minimatch";
+import { inspect } from 'util';
 
 export default class Path {
 
@@ -54,6 +55,9 @@ export default class Path {
 
     public toString(): string {
         return this._value;
+    }
+    [inspect.custom]() {
+        return `"${this._value}"`;
     }
 
     public equals(other: Path) {

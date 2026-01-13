@@ -161,6 +161,12 @@ export default class PostmanConfigParser {
             const postResponse = getPropRecursive<string>(wrapper, 'event.post-response');
             template.event = new PostmanEventScript(preRequest, postResponse);
         }
+        //개별 헤더
+        if (hasProp(wrapper, this.KEY_HEADERS)) {
+            const props = getDeepProps(wrapper, [this.KEY_HEADERS]);
+            template.headers = !Array.isArray(props) ? [] : props.map((header: Property) =>
+                new PostmanHeader(header.name, header.getTypeValue<string>()));
+        }
         return template;
     }
 
@@ -172,7 +178,7 @@ export default class PostmanConfigParser {
                 const format = getProp<string>(wrapper, 'format');
                 return PostmanRequestWrapperTemplate.ofConfig(path, mode, (str: IPostmanRequestBody) => {
                     //beautify in postman raw body
-                    return format.replace('${body}', JSON.stringify(str, null,));
+                    return format.replace('${body}', JSON.stringify(str));
                 });
             }
             case RequestMode.FORMDATA: {

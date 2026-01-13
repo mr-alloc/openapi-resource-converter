@@ -26,6 +26,7 @@ postman 명령어는 OpenAPI 3.0 스펙을 Postman Collection v2.1 스펙으로 
   * The file path for output (Required)
 * -c, --config : 변환 설정(yaml) 파일 경로 (선택)
   * path of yaml config file (Required) 
+* -l, --lint : 설정 파일 검증, -c 옵션과 함께 사용
 
 포스트맨 컬렉션 변환 설정 파일은 다음과 같은 형식으로 작성합니다. (The file that configuring specification that will be converted should be start with:)
 
@@ -70,6 +71,18 @@ postman:
   headers:
     Authorization: "Bearer {{token}}"
     Content-Type: application/json
+```
+
+**요청 별로 추가할 기본헤더 추가 (set headers per request)**
+
+```yaml
+postman:
+  headers:
+    Authorization: "Bearer {{token}}"
+  request-wrapper:
+    - path: /priority-headers
+      headers: # 우선적용
+        Authorization: "Bearer {{overwriteToken}}"
 ```
 
 #### 플레이스홀더 설정 (Set the placeholder)

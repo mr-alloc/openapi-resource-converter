@@ -60,10 +60,10 @@ export default class ParsedPostmanOption {
 
     public printStatus() {
         //pretty print
-        console.log('host:', this._host);
-        console.log('excludePath:', this._excludePath);
-        console.log('headers:', this._headers);
-        console.log('caseMode:', this._caseMode);
-        console.log('placeholders:', this._placeholders);
+        console.log('Host:', this._host);
+        console.log('Exclude path:', this._excludePath);
+        console.log('Headers:', this._headers);
+        console.log('Case mode:', this._caseMode.value);
+        console.log('Placeholders:', [...this._placeholders.entries()].map(([key, value]) => `${key}: ${value}`));
     }
 }

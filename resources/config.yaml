@@ -46,6 +46,9 @@ postman:
     #회원 가입시 토큰 저장
     - path: /sign-in
       type: all
+      headers:
+        X-Secret-Credential: "{{secret_credential}}"
+        X-User-Id: "{{user_overwrote_id}}"
       event:
         pre-request: |-
           const body = pm.response.json();
