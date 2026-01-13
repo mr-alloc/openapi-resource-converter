@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import 'module-alias/register';
-import 'source-map-support/register'
+import 'source-map-support/register';
 import {Command} from "commander";
 import PostmanCommandBuilder from "@/converter/postman/postman-command-builder";
 import {CommandOption} from "@/types";
-import packageJson from 'package.json';
+import packageJson from '../package.json';
 
 const program = new Command();
 program

@@ -1,6 +1,6 @@
 {
   "name": "openapi-resource-converter",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "index.ts",
   "scripts": {
     "clean": "shx rm -rf dist src/**/*.js",
@@ -13,10 +13,12 @@
     "help:postman": "npm run re-build && npm run convert -- postman --help"
   },
   "bin": {
-    "orc": "./dist/index.js"
+    "orc": "./bin/orc.js"
   },
   "files": [
     "dist",
+    "bin",
+    "tsconfig.json",
     "README.md"
   ],
   "repository": {
@@ -58,7 +60,7 @@
     "yaml": "^2.6.1"
   },
   "_moduleAliases": {
-    "@": "src"
+    "@": "dist"
   },
   "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }
