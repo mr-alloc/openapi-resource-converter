@@ -1,4 +1,6 @@
 import fs from "fs";
+import * as path from "path";
+
 export function notExist(path: string): boolean {
     return !fs.existsSync(path);
 }
@@ -7,8 +9,12 @@ export function readFile(path: string, encoding: BufferEncoding = 'utf-8'): stri
     return fs.readFileSync(path, encoding);
 }
 
-export function removeFile(path: string) {
-    fs.rmSync(path, {
+export function removeFile(filePath: string) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });  // 재귀적으로 생성
+    }
+    fs.rmSync(filePath, {
         force: true
     });
 }

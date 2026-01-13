@@ -25,6 +25,7 @@ import CaseMode from "@/type/postman/constant/case-mode";
 import Parameter from "@/type/open-api/sub/parameter";
 import InType from "@/type/open-api/constant/in-type";
 import PostmanPathVariable from "@/type/postman/postman-path-variable";
+import {PostmanEvent, PostmanEventExecutableScript} from "@/type/postman/postman-event";
 
 export default class PostmanCollectionConverter implements IOpenapiConverter {
 
@@ -74,7 +75,8 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
                 : new PostmanDirectory(this.getDirectoryName(path), path.value, []);
 
             const postmanRequest = this.toPostmanRequest(specification);
-            directory.addRequest(specification.summary, postmanRequest);
+            const postmanEvent = this.toPostmanEvent(specification);
+            directory.addRequest(specification.summary, postmanRequest, postmanEvent);
 
             //디렉토리가 없는 경우
             if (!existDirectory) {
@@ -199,5 +201,25 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
     private readonly excludePathFilter = (spec: ApiSpecification): boolean => {
         const path = spec.path;
         return !this._configures.excludePaths.some(excludePath => excludePath.matches(path));
+    }
+
+    private toPostmanEvent(specification: ApiSpecification): Array<PostmanEvent> | undefined {
+        const defaultEvent = this._configures.getDefaultEvent(specification.path);
+        if (defaultEvent.length === 0) return undefined;
+
+        const events = new Array<PostmanEvent>();
+        for (const script of defaultEvent) {
+            if (script.preRequest) {
+                events.push(PostmanEvent.ofPreRequest(new PostmanEventExecutableScript(
+                    script.preRequest.split('\n')
+                )));
+            }
+            if (script.postResponse) {
+                events.push(PostmanEvent.ofPostResponse(new PostmanEventExecutableScript(
+                    script.postResponse.split('\n')
+                )));
+            }
+        }
+        return events;
     }
 }

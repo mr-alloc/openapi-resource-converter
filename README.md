@@ -168,3 +168,29 @@ postman:
 ![Formdata 옵션](/images/formdata-option.png)
 
 ---
+
+**Test Script 사용**
+
+✅ 요청 전, 응답 후 시점에 수행할 수 있는 테스트 스크립트를 넣을 수 있습니다.
+
+`all` 타입은 모든 본문에 대해 적용한다는 의미입니다.
+
+```yaml
+postman:
+  request-wrapper:
+    - path: /sign-in
+      type: all
+      event:
+        pre-request: |-
+          const body = pm.response.json();
+          pm.environment.set("access_token", body.accessToken);
+          pm.environment.set("refresh_token", body.refreshToken);
+        post-response: |-
+          console.log("Say Hi");
+```
+
+위 설정의 경우 스크립트가 그대로 적용됩니다.
+
+![테스트 스크립트 적용](/images/test-script.png)
+
+---

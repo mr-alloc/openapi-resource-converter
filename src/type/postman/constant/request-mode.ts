@@ -3,6 +3,7 @@ import ProtocolType from "@/type/open-api/constant/protocol-type";
 export default class RequestMode {
 
     static readonly NONE = new RequestMode(ProtocolType.NONE, "none");
+    static readonly ALL = new RequestMode(ProtocolType.NONE, "all");
     static readonly RAW = new RequestMode(ProtocolType.REQUEST_BODY, "raw");
     static readonly FORMDATA = new RequestMode(ProtocolType.PARAMETERS, "formdata");
     static readonly URL_ENCODED = new RequestMode(ProtocolType.URL_ENCODED, "urlencoded");
@@ -28,7 +29,8 @@ export default class RequestMode {
     }
 
     public static fromValue(value: string): RequestMode {
-        return [RequestMode.RAW, RequestMode.FORMDATA, RequestMode.URL_ENCODED].find(mode => mode.value === value) ??RequestMode.NONE;
+        return [this.ALL, this.RAW, this.FORMDATA, this.URL_ENCODED]
+            .find(mode => mode.value === value) ?? RequestMode.NONE;
     }
 
     equalsValue(other: RequestMode) {

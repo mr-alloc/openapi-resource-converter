@@ -7,6 +7,7 @@ import ParsedPostmanOption from "@/type/postman/parsed-postman-option";
 import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrapper-template";
 import RequestMode from "@/type/postman/constant/request-mode";
 import PostmanFormdata from "@/type/postman/postman-formdata";
+import {PostmanEventScript} from "@/type/postman/constant/postman-event-script";
 
 export default class PostmanConvertConfigures {
 
@@ -64,6 +65,15 @@ export default class PostmanConvertConfigures {
         }
         return [];
     }
+
+    public getDefaultEvent(path: Path): Array<PostmanEventScript> {
+        const found = this._defaultRequestWrappers.filter(template =>
+            template.path.matches(path));
+        return found
+            .filter(matched => matched.event !== undefined)
+            .map(matched => matched.event!);
+    }
+
 
     public applyPostmanOption(parsedPostmanOption: ParsedPostmanOption) {
         this._host = parsedPostmanOption.host;

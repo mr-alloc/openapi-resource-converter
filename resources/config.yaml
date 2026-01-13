@@ -6,6 +6,7 @@ postman:
     - /error
   headers:
     Content-Type: application/json
+    X-User-Id: "{{user_id}}"
   placeholders:
     store_type:
       type: categoryId
@@ -42,6 +43,21 @@ postman:
         - name: isAdult
           description: 성인여부
           value: "{{isAdult}}"
+    #회원 가입시 토큰 저장
+    - path: /sign-in
+      type: all
+      event:
+        pre-request: |-
+          const body = pm.response.json();
+          pm.environment.set("access_token", body.accessToken);
+          pm.environment.set("refresh_token", body.refreshToken);
+        post-response: |-
+          console.log("Say Hi");
+    - path: /sign-in
+      type: all
+      event:
+        pre-request: |-
+          console.log('This is last request event');
 
 
 

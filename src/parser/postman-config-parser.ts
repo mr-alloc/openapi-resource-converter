@@ -1,5 +1,5 @@
 import {parse} from 'yaml';
-import {getDeepProps, getProp, hasProp, Property} from "@/util/object-util";
+import {getDeepProps, getProp, getPropRecursive, hasProp, Property} from "@/util/object-util";
 import PostmanHeader from "@/type/postman/postman-header";
 import CaseMode from "@/type/postman/constant/case-mode";
 import {isEmpty} from "@/util/string-util";
@@ -10,6 +10,7 @@ import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrappe
 import RequestMode from "@/type/postman/constant/request-mode";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import PostmanFormdata from "@/type/postman/postman-formdata";
+import {PostmanEventScript} from "@/type/postman/constant/postman-event-script";
 
 export default class PostmanConfigParser {
 
@@ -140,9 +141,8 @@ export default class PostmanConfigParser {
 
         const type = getProp<string>(wrapper, 'type');
         const requestMode = RequestMode.fromValue(type);
-        if (requestMode.isNone) {
-            return false;
-        }
+        if (requestMode == RequestMode.ALL) return true;
+        if (requestMode.isNone) return false
 
         if (requestMode.equalsValue(RequestMode.RAW)) {
             return hasProp(wrapper, 'format');
@@ -154,6 +154,17 @@ export default class PostmanConfigParser {
     }
 
     private parseWrapperPolicy(wrapper: any): PostmanRequestWrapperTemplate {
+        const template = this.extractWrapperTemplate(wrapper);
+        //테스트 이벤트
+        if (hasProp(wrapper, 'event')) {
+            const preRequest = getPropRecursive<string>(wrapper, 'event.pre-request');
+            const postResponse = getPropRecursive<string>(wrapper, 'event.post-response');
+            template.event = new PostmanEventScript(preRequest, postResponse);
+        }
+        return template;
+    }
+
+    private extractWrapperTemplate(wrapper: any) {
         const path = new Path(getProp<string>(wrapper, 'path'));
         const mode = RequestMode.fromValue(getProp<string>(wrapper, 'type'));
         switch (mode) {
@@ -179,6 +190,8 @@ export default class PostmanConfigParser {
                 }
                 return PostmanRequestWrapperTemplate.ofConfig(path, mode, undefined, parameters);
             }
+            case RequestMode.ALL:
+                return PostmanRequestWrapperTemplate.ofConfig(path, mode, undefined, []);
             default: throw new Error('Invalid request mode');
         }
     }

@@ -2,6 +2,7 @@ import IPostmanNode from "@/type/postman/i-postman-node";
 import Path from "@/type/path";
 import PostmanRequest from "@/type/postman/postman-request";
 import PostmanRequestWrapper from "@/type/postman/postman-request-wrapper";
+import {PostmanEvent} from "@/type/postman/postman-event";
 
 export default class PostmanDirectory implements IPostmanNode {
     private readonly _name: string;
@@ -31,9 +32,13 @@ export default class PostmanDirectory implements IPostmanNode {
     }
 
     public addNodeRecursive(path: Path, value: PostmanDirectory, depth: number) {
+        if (path.isLastPath(depth)) {
+            this._item.push(...value.item);
+            return;
+        }
         const current = path.subset(depth);
 
-        //마지막 경로일 경우에 만약 없다면 추가
+        //포함되지 않은 경로라면 추가
         if (current.equals(path) && !this.includeDirectory(current)) {
             this._item.push(value);
             return;
@@ -50,8 +55,8 @@ export default class PostmanDirectory implements IPostmanNode {
         directory.addNodeRecursive(path, value, depth +1);
     }
 
-    public addRequest(name: string, postmanRequest: PostmanRequest) {
-        this._item.push(new PostmanRequestWrapper(name, postmanRequest));
+    public addRequest(name: string, postmanRequest: PostmanRequest, postmanEvent?: Array<PostmanEvent>) {
+        this._item.push(new PostmanRequestWrapper(name, postmanRequest, postmanEvent));
     }
 
     public toJSON() {

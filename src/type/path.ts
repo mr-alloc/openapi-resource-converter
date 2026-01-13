@@ -31,6 +31,10 @@ export default class Path {
         return Path.of(this._array.slice(0, index +1));
     }
 
+    public isLastPath(depth: number) {
+        return this._array.length === depth;
+    }
+
     static of(array: Array<string>): Path {
         return new Path(array.map(value => `/${value}`).join(""));
     }
@@ -39,7 +43,7 @@ export default class Path {
         return new Path(path);
     }
 
-    indexOf(index: number) {
+    public indexOf(index: number) {
         return this._array[index];
     }
 
