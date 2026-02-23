@@ -43,7 +43,7 @@ export default class PostmanConvertConfigures {
         return this._casingMode;
     }
 
-    get valuePlaceholder(): Map<string, any> {
+    get valuePlaceholder(): Map<string, TypeValue> {
         return this._valuePlaceholder;
     }
 

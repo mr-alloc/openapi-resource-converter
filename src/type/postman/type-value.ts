@@ -1,4 +1,5 @@
 import DataType from "@/type/open-api/constant/data-type";
+import {inspect} from "util";
 
 export default class TypeValue {
 
@@ -16,5 +17,12 @@ export default class TypeValue {
 
     get value(): string {
         return this._value;
+    }
+    public toString(): string {
+        return `(${this._type.value}) ${this._value}`
+    }
+
+    [inspect.custom]() {
+        return toString();
     }
 }

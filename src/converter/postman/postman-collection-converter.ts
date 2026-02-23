@@ -191,17 +191,18 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
         const valueField = field as ValueField;
         const fieldName = CaseMode.to(valueField.name, this._configures.casingMode);
         if (this._configures.valuePlaceholder.has(fieldName)) {
-            const placeholder = this._configures.valuePlaceholder.get(fieldName);
-            return `{{${placeholder}}}`;
+            const placeholder = this._configures.valuePlaceholder.get(fieldName)!;
+            return `{{${placeholder.value}}}`;
         }
 
         return DefaultValue.fromTypeFormat(valueField.type, valueField.format).typeValue;
     }
 
     private readonly getDirectoryName = (path: Path): string => {
-        return this._tagMap.has(path.value)
+        const name = this._tagMap.has(path.value)
             ? this._tagMap.get(path.value)?.description ?? 'no-description'
             : path.indexOf(path.array.length - 1);
+        return name;
     }
 
     private readonly excludePathFilter = (spec: ApiSpecification): boolean => {

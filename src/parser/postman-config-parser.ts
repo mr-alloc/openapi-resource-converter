@@ -101,14 +101,14 @@ export default class PostmanConfigParser {
 
         const properties = getDeepProps(config, [this.KEY_PLACEHOLDER]);
         for (const property of properties) {
-            if (! hasProp(property, 'type') || ! hasProp(property, 'value')) {
+            if ( ! hasProp(property, 'value')) {
                 continue;
             }
 
-            const type = getProp<string>(property, 'type');
+            const type = typeof property.getTypeValue();
             const value = getProp<string>(property, 'value');
 
-            if (isEmpty(type) || isEmpty(value)) {
+            if (isEmpty(value)) {
                 continue;
             }
 

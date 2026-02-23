@@ -1,3 +1,4 @@
+import {inspect} from "util";
 
 export function toProps(object: any | undefined): Array<Property> {
     return Object.entries(object ?? {}).map(([key, value]) => new Property(key, value));
@@ -139,5 +140,9 @@ export class Property {
 
     public toString(): string {
         return `${this._name}: ${JSON.stringify(this._value)}`;
+    }
+    
+    [inspect.custom]() {
+        return toString();
     }
 }

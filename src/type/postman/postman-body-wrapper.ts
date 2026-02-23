@@ -29,12 +29,10 @@ export default class PostmanBodyWrapper {
         if (Array.isArray(this._data)) {
             wrapper.formdata = this._data;
         } else {
-            const placeholderRE = /\"(\{\{[\w_]+\}\})\"/gm;
             if (typeof this._data === 'string') {
                 wrapper.raw = this._data;
             } else {
-                const rawBody = JSON.stringify(this._data);
-                wrapper.raw = rawBody.replace(placeholderRE, "$1");
+                wrapper.raw = JSON.stringify(this._data);
             }
             wrapper.options = this._options!;
         }

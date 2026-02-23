@@ -26,7 +26,7 @@ export default class ApiSpecification {
         this._method = request.method;
         this._path = new Path(request.path);
         this._tags = getProp<Array<string>>(self.value, NamedLiteral.TAGS);
-        this._summary = getProp<string>(self.value, NamedLiteral.SUMMARY);
+        this._summary = getProp<string>(self.value, NamedLiteral.SUMMARY) ?? this._path.value;
         this._operationId = getProp<string>(self.value, NamedLiteral.OPERATION_ID);
         this._requestBody = requestBody;
         this._parameters = parameters;
