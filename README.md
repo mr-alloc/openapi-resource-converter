@@ -1,3 +1,10 @@
+# OpenAPI Resource Converter
+
+[![NPM Version](https://img.shields.io/npm/v/openapi-resource-converter?style=flat-square)](https://www.npmjs.com/package/openapi-resource-converter)
+![Build Status](https://img.shields.io/github/actions/workflow/status/mr-alloc/openapi-resource-converter/publish.yaml?style=flat-square)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)
+
+
 ## Summary
 
 이 프로젝트는 Open API 3.0 스펙을 여러 데이터 형태로 변환할 수 있는 라이브러리 입니다.
