@@ -16,11 +16,11 @@ export class PostmanEvent {
     }
 
     public static ofPreRequest(script: PostmanEventExecutableScript): PostmanEvent {
-        return new PostmanEvent('test', script);
+        return new PostmanEvent('prerequest', script);
     }
 
     public static ofPostResponse(script: PostmanEventExecutableScript): PostmanEvent {
-        return new PostmanEvent('prerequest', script);
+        return new PostmanEvent('test', script);
     }
 
     public toJSON() {

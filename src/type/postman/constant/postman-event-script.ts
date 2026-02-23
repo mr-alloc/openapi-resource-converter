@@ -2,8 +2,8 @@ export class PostmanEventScript {
     private readonly _preRequest?: string;
     private readonly _postResponse?: string;
 
-    constructor(postRequest?: string, postResponse?: string) {
-        this._preRequest = postRequest;
+    constructor(preRequest?: string, postResponse?: string) {
+        this._preRequest = preRequest;
         this._postResponse = postResponse;
     }
 
