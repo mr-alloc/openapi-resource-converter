@@ -1,8 +1,63 @@
 postman:
-  host: "{{community-url}}"
-  exclude-paths:
+  host: "{{url}}"
+  case: camel
+  exclude-path:
     - /
     - /error
   headers:
     Content-Type: application/json
-    Authorization: "Bearer {{access-token}}"
+    X-User-Id: "{{user_id}}"
+  placeholders:
+    store_type:
+      type: categoryId
+      value: category_id
+  request-wrapper:
+    # json
+    - path: /api/v1/**
+      type: raw
+      format: |
+        {
+          "id": {{id}},
+          "app": "{{version}}",
+          "message": ${body}
+        }
+    - path: /api/v2/**
+      type: raw
+      format: |
+        {
+          "num": 1,
+          "id": {{id}},
+          "storeCode": "{{version}}",
+          "countryCode": "{{countryCode}}",
+          "message": ${body}
+        }
+    - path: /api/v3/**
+      type: formdata
+      values:
+        - name: token
+          description: 인증토큰
+          value: "{{token}}"
+        - name: timestamp
+          description: 클라이언트 시간
+          value: "{{timestamp}}"
+        - name: isAdult
+          description: 성인여부
+          value: "{{isAdult}}"
+    #회원 가입시 토큰 저장
+    - path: /sign-in
+      type: all
+      headers:
+        X-Secret-Credential: "{{secret_credential}}"
+        X-User-Id: "{{user_overwrote_id}}"
+      event:
+        pre-request: |-
+          console.log("Say Hi!");
+        post-response: |-
+          const body = pm.response.json();
+          pm.environment.set("access_token", body.accessToken);
+          pm.environment.set("refresh_token", body.refreshToken);
+    - path: /sign-in
+      type: all
+      event:
+        pre-request: |-
+          console.log('This is last request event');

@@ -24,9 +24,9 @@ export default class PostmanQuery {
         return this._description;
     }
 
-    static of(param: Parameter): PostmanQuery {
+    public static of(param: Parameter, value: string): PostmanQuery {
         //value는 변수나 기본값으로 쓰일수 있기 때문에, 추후 {{param}}처럼 하는것을 고려
-        return new PostmanQuery(param.name, '', param.description)
+        return new PostmanQuery(param.name, value, param.description)
     };
 
     toJSON() {

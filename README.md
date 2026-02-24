@@ -1,8 +1,8 @@
 # OpenAPI Resource Converter
 
 [![NPM Version](https://img.shields.io/npm/v/openapi-resource-converter?style=flat-square)](https://www.npmjs.com/package/openapi-resource-converter)
-![Build Status](https://img.shields.io/github/actions/workflow/status/mr-alloc/openapi-resource-converter/publish.yaml?style=flat-square)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)
+![Build Status](https://img.shields.io/github/actions/workflow/status/mr-alloc/openapi-resource-converter/publish.yaml?style=flat-square)
 
 
 ## Summary
@@ -27,13 +27,12 @@ orc postman -f <openapi json file path> -o <output file path>
 postman 명령어는 OpenAPI 3.0 스펙을 Postman Collection v2.1 스펙으로 변환합니다.
 > The command that named postman will convert to postman collection v2.1 from Open API 3.0.
 
-* -f, --file : OpenAPI 3.0 스펙 JSON 파일 경로 (필수)
-  * THe file path of Open API 3.0 Specification JSON (Required)
-* -o, --output : 변환된 JSON 파일 경로 (필수)
-  * The file path for output (Required)
-* -c, --config : 변환 설정(yaml) 파일 경로 (선택)
-  * path of yaml config file (Required) 
-* -l, --lint : 설정 파일 검증, -c 옵션과 함께 사용
+| 옵션           | 설명                             | 예시                         | 필수 |
+|--------------|--------------------------------|----------------------------|----|
+| -f, --file   | OpenAPI 3.0 스펙 JSON 파일 경로 (필수) | -f build/docs/openapi.json | ✅  |
+| -o, --output | 변환된 JSON 파일 경로 (필수)            | -o build/docs/postman.json | ✅  |
+| -c, --config | 변환 설정(yaml) 파일 경로 (선택)         | -c .postman/orc.yaml       | ❌  |
+| -l, --lint   | 설정 파일 검증, -c 옵션과 함께 사용         | -l                         | ❌  |
 
 포스트맨 컬렉션 변환 설정 파일은 다음과 같은 형식으로 작성합니다. (The file that configuring specification that will be converted should be start with:)
 

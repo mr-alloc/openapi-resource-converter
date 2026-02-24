@@ -90,7 +90,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
 
     private readonly toPostmanRequest = (spec: ApiSpecification): PostmanRequest => {
         const pathVariables = spec.hasParameters ? this.extractPathVariables(spec.parameters!) : [];
-        const url = new PostmanUrl(this._configures.host, spec, pathVariables);
+        const url = new PostmanUrl(this._configures.host, spec, pathVariables, this._configures.valuePlaceholder);
         const body = this.extractRequestBody(spec);
 
         const defaultTemplateHeaders = this._configures.getDefaultHeaders(spec.path);

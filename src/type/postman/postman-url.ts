@@ -1,10 +1,8 @@
-import {split, toMap} from "@/util/collection-util";
-import {raw} from "express";
-import * as path from "path";
 import PostmanPathVariable from "@/type/postman/postman-path-variable";
 import Path from "@/type/path";
 import ApiSpecification from "@/type/open-api/api-specification";
 import PostmanQuery from "./postman-query";
+import TypeValue from "@/type/postman/type-value";
 
 export default class PostmanUrl {
 
@@ -15,7 +13,7 @@ export default class PostmanUrl {
     private readonly _variable: Array<PostmanPathVariable>
     private readonly _query: Array<PostmanQuery>
 
-    public constructor(host: string, spec: ApiSpecification, variables: Array<PostmanPathVariable>) {
+    public constructor(host: string, spec: ApiSpecification, variables: Array<PostmanPathVariable>, valuePlaceholder: Map<string, TypeValue>) {
         const changed = variables.reduce((origin, variable) => {
             const template = `{${variable.key}}`;
             return origin.replace(template, `:${variable.key}`);
@@ -26,7 +24,14 @@ export default class PostmanUrl {
         this._host = [host]
         this._path = bindPath.array
         this._variable = variables;
-        this._query = spec.parameters?.values.map(PostmanQuery.of) ?? [];
+        this._query = spec.parameters?.values.map(param => {
+            let value = '';
+            if (valuePlaceholder.has(param.name)) {
+                const typeValue = valuePlaceholder.get(param.name)!;
+                value = `{{${typeValue.value}}}`
+            }
+            return PostmanQuery.of(param, value)
+        }) ?? [];
     }
 
 
