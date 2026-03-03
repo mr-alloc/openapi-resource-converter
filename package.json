@@ -11,7 +11,7 @@
     "test:postman": "npm run re-build && npm run convert -- postman -f ./resources/openapi.json -o ./static/postman.json -c ./resources/config.yaml",
     "help": "npm run re-build && npm run convert -- --help",
     "help:postman": "npm run re-build && npm run convert -- postman --help",
-    "prepublishOnly": "cp README.md README-GITHUB.md && README-POSTMAN.md README.md",
+    "prepublishOnly": "cp README.md README-GITHUB.md && cp README-POSTMAN.md README.md",
     "postpublish": "mv README-GITHUB.md README.md"
   },
   "bin": {
