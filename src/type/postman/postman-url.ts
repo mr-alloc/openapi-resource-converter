@@ -36,7 +36,7 @@ export default class PostmanUrl {
             }
             return PostmanQuery.of(param, value)
         }) ?? [];
-        this.ensureMatchingPathVariables(spec.path);
+        this.ensureMatchingPathVariables(spec.path, configures);
     }
 
     private makeFinalPath(
@@ -50,7 +50,7 @@ export default class PostmanUrl {
         return Path.of(replaced).value;
     }
 
-    private ensureMatchingPathVariables(origin: Path) {
+    private ensureMatchingPathVariables(origin: Path, configures: PostmanConvertConfigures) {
         const group = toMap(this._variable, (variable) => variable.key);
         //경로변수가 안맞다면 맞춰주기
         const pathVariables = origin.array
@@ -59,9 +59,11 @@ export default class PostmanUrl {
         for (const pathVariable of pathVariables) {
             if (group.has(pathVariable)) continue;
             //경로에는 있지만, OpenAPI JSON에 변수가 없는경우 추가
+            const placeholders = configures.valuePlaceholder;
+            const value = placeholders.has(pathVariable) ? placeholders.get(pathVariable)?.value! : "";
             this._variable.push(new PostmanPathVariable(
                 pathVariable,
-                "", DataType.STRING, "", true
+                value, DataType.STRING, "", true
             ));
         }
     }

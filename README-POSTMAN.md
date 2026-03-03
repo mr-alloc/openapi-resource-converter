@@ -98,9 +98,8 @@ postman:
 
 ```json
 {
-    "userId": {{
-    uid
-}}, //문자 형인 경우 "{{uid}}"
+    "userId": "{{uid}}"
+    //정수형인 경우 {{uid}}
 }
 ```
 
