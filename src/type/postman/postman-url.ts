@@ -7,6 +7,7 @@ import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrappe
 import DataType from "@/type/open-api/constant/data-type";
 import {toMap} from "@/util/collection-util";
 import InType from "@/type/open-api/constant/in-type";
+import TypeValue from "@/type/postman/type-value";
 
 export default class PostmanUrl {
 
@@ -36,7 +37,7 @@ export default class PostmanUrl {
             }
             return PostmanQuery.of(param, value)
         }) ?? [];
-        this.ensureMatchingPathVariables(spec.path, configures);
+        this.ensureMatchingPathVariables(spec.path);
     }
 
     private makeFinalPath(
@@ -50,7 +51,7 @@ export default class PostmanUrl {
         return Path.of(replaced).value;
     }
 
-    private ensureMatchingPathVariables(origin: Path, configures: PostmanConvertConfigures) {
+    private ensureMatchingPathVariables(origin: Path) {
         const group = toMap(this._variable, (variable) => variable.key);
         //경로변수가 안맞다면 맞춰주기
         const pathVariables = origin.array
@@ -59,11 +60,9 @@ export default class PostmanUrl {
         for (const pathVariable of pathVariables) {
             if (group.has(pathVariable)) continue;
             //경로에는 있지만, OpenAPI JSON에 변수가 없는경우 추가
-            const placeholders = configures.valuePlaceholder;
-            const value = placeholders.has(pathVariable) ? placeholders.get(pathVariable)?.value! : "";
             this._variable.push(new PostmanPathVariable(
                 pathVariable,
-                value, DataType.STRING, "", true
+                '', DataType.STRING, "", true
             ));
         }
     }
@@ -112,5 +111,14 @@ export default class PostmanUrl {
         }
 
         return result;
+    }
+
+    public decoratePlaceHolder(placeholder: Map<string, TypeValue>) {
+        for (const variable of this._variable) {
+            const existing = placeholder.get(variable.key);
+            if (!existing) continue;
+
+            variable.replaceValue(`{{${existing.value}}}`);
+        }
     }
 }

@@ -5,7 +5,7 @@ import DefaultValue from "@/type/postman/constant/default-value";
 export default class PostmanPathVariable {
 
     private readonly _key: string;
-    private readonly _value: string;
+    private _value: string;
     private readonly _type: DataType;
     private readonly _description: string;
     private readonly _required: boolean;
@@ -65,4 +65,7 @@ export default class PostmanPathVariable {
         };
     }
 
+    public replaceValue(value: string) {
+        this._value = value;
+    }
 }
