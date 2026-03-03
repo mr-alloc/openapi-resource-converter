@@ -3,13 +3,13 @@ import DataFormat from "@/type/open-api/constant/data-format";
 
 export default class DefaultValue {
 
-    private static readonly STRING = new DefaultValue(DataType.STRING, DataFormat.NONE, "", (value: string) => value);
-    private static readonly DOUBLE = new DefaultValue(DataType.NUMBER, DataFormat.DOUBLE, "0.0", parseFloat);
-    private static readonly FLOAT = new DefaultValue(DataType.NUMBER, DataFormat.FLOAT, "0.0", parseFloat);
-    private static readonly INT = new DefaultValue(DataType.INTEGER, DataFormat.INT32, "0", parseInt);
-    private static readonly LONG = new DefaultValue(DataType.INTEGER, DataFormat.INT64, "0", parseInt);
-    private static readonly BOOLEAN = new DefaultValue(DataType.BOOLEAN, DataFormat.NONE, "false", (value: string) => value === 'true');
-    private static readonly ARRAY = new DefaultValue(DataType.ARRAY, DataFormat.NONE, "[]", JSON.parse);
+    public static readonly STRING = new DefaultValue(DataType.STRING, DataFormat.NONE, "", (value: string) => value);
+    public static readonly DOUBLE = new DefaultValue(DataType.NUMBER, DataFormat.DOUBLE, "0.0", parseFloat);
+    public static readonly FLOAT = new DefaultValue(DataType.NUMBER, DataFormat.FLOAT, "0.0", parseFloat);
+    public static readonly INT = new DefaultValue(DataType.INTEGER, DataFormat.INT32, "0", parseInt);
+    public static readonly LONG = new DefaultValue(DataType.INTEGER, DataFormat.INT64, "0", parseInt);
+    public static readonly BOOLEAN = new DefaultValue(DataType.BOOLEAN, DataFormat.NONE, "false", (value: string) => value === 'true');
+    public static readonly ARRAY = new DefaultValue(DataType.ARRAY, DataFormat.NONE, "[]", JSON.parse);
 
     private readonly _type: DataType;
     private readonly _format: DataFormat;

@@ -11,6 +11,7 @@ import RequestMode from "@/type/postman/constant/request-mode";
 import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import PostmanFormdata from "@/type/postman/postman-formdata";
 import {PostmanEventScript} from "@/type/postman/constant/postman-event-script";
+import HttpMethod from "@/type/open-api/constant/http-method";
 
 export default class PostmanConfigParser {
 
@@ -134,19 +135,17 @@ export default class PostmanConfigParser {
     }
 
     private requestWrapperFilter(wrapper: any): boolean {
-        const requiredCondition = hasProp(wrapper, 'path') && hasProp(wrapper, 'type');
+        const requiredCondition = hasProp(wrapper, 'path');
         if (!requiredCondition) {
             return false;
         }
-
         const type = getProp<string>(wrapper, 'type');
         const requestMode = RequestMode.fromValue(type);
         if (requestMode == RequestMode.ALL) return true;
-        if (requestMode.isNone) return false
 
         if (requestMode.equalsValue(RequestMode.RAW)) {
             return hasProp(wrapper, 'format');
-        } else if (requestMode.equalsValue(RequestMode.FORMDATA)) {
+        } else if (requestMode.equalsValue(RequestMode.FORM_DATA)) {
             return hasProp(wrapper, 'values');
         }
 
@@ -172,16 +171,17 @@ export default class PostmanConfigParser {
 
     private extractWrapperTemplate(wrapper: any) {
         const path = new Path(getProp<string>(wrapper, 'path'));
+        const method = HttpMethod.of(getProp<string>(wrapper, 'method'));
         const mode = RequestMode.fromValue(getProp<string>(wrapper, 'type'));
         switch (mode) {
             case RequestMode.RAW: {
                 const format = getProp<string>(wrapper, 'format');
-                return PostmanRequestWrapperTemplate.ofConfig(path, mode, (str: IPostmanRequestBody) => {
+                return PostmanRequestWrapperTemplate.ofConfig(path, method, mode, (str: IPostmanRequestBody) => {
                     //beautify in postman raw body
                     return format.replace('${body}', JSON.stringify(str));
                 });
             }
-            case RequestMode.FORMDATA: {
+            case RequestMode.FORM_DATA: {
                 const values = getProp<Array<any>>(wrapper, 'values');
                 const parameters = new Array<PostmanFormdata>();
                 for (const param of values) {
@@ -194,10 +194,10 @@ export default class PostmanConfigParser {
 
                     parameters.push(new PostmanFormdata(name, value, 'text', description,));
                 }
-                return PostmanRequestWrapperTemplate.ofConfig(path, mode, undefined, parameters);
+                return PostmanRequestWrapperTemplate.ofConfig(path, method, mode, undefined, parameters);
             }
             case RequestMode.ALL:
-                return PostmanRequestWrapperTemplate.ofConfig(path, mode, undefined, []);
+                return PostmanRequestWrapperTemplate.ofConfig(path, method, mode, undefined, []);
             default: throw new Error('Invalid request mode');
         }
     }

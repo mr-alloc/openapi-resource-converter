@@ -1,7 +1,7 @@
-import { toMap } from "@/util/collection-util";
+import {toMap} from "@/util/collection-util";
 
 export default class HttpMethod {
-
+    static readonly ALL = new HttpMethod("all");
     static readonly GET = new HttpMethod("get");
     static readonly POST = new HttpMethod("post");
     static readonly PUT = new HttpMethod("put");
@@ -39,5 +39,21 @@ export default class HttpMethod {
 
     public toString(): string {
         return this._value;
+    }
+
+    public static of(value?: string) {
+        if (!value) return HttpMethod.ALL;
+        value = value.toLowerCase();
+        if (!HttpMethod.hasValue(value))
+            throw Error(`Invalid value "${value}"`);
+        return HttpMethod.fromValue(value);
+    }
+
+    public isAll(): boolean {
+        return this._value === HttpMethod.ALL._value;
+    }
+
+    public equalsValue(other: HttpMethod): boolean {
+        return this._value === other._value;
     }
 }

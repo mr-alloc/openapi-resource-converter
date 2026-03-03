@@ -10,6 +10,7 @@ const program = new Command();
 program
     .name('orc')
     .description('OpenAPI Resource Converter')
+    .addHelpText('beforeAll', 'postman - 포스트맨 컬렉션 변환(Convert to Postman collection)')
     .version(packageJson.version)
 
 program

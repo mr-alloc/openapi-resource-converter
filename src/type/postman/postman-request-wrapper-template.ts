@@ -4,10 +4,12 @@ import IPostmanRequestBody from "@/type/postman/i-postman-request-body";
 import PostmanFormdata from "@/type/postman/postman-formdata";
 import {PostmanEventScript} from "@/type/postman/constant/postman-event-script";
 import PostmanHeader from "@/type/postman/postman-header";
+import HttpMethod from "@/type/open-api/constant/http-method";
 
 export default class PostmanRequestWrapperTemplate {
 
     private readonly _path: Path;
+    private readonly _method: HttpMethod;
     private readonly _type: RequestMode;
     private readonly _format?: (str: IPostmanRequestBody) => IPostmanRequestBody;
     private readonly _values?: Array<PostmanFormdata>;
@@ -15,11 +17,22 @@ export default class PostmanRequestWrapperTemplate {
     private _event?: PostmanEventScript;
     private _headers?: Array<PostmanHeader>;
 
-    private constructor(path: Path, type: RequestMode, format?: (body: IPostmanRequestBody) => IPostmanRequestBody, values?: Array<PostmanFormdata>) {
+    private constructor(
+        path: Path,
+        method: HttpMethod,
+        type: RequestMode,
+        format?: (body: IPostmanRequestBody) => IPostmanRequestBody,
+        values?: Array<PostmanFormdata>
+    ) {
         this._path = path
+        this._method = method;
         this._type = type
         this._format = format
         this._values = values
+    }
+
+    public isMatchedHandler(path: Path, method: HttpMethod): boolean {
+        return this._path.matches(path) && (this._method.isAll() || this._method.equalsValue(method));
     }
 
 
@@ -27,10 +40,13 @@ export default class PostmanRequestWrapperTemplate {
         return this._path;
     }
 
+    get method(): HttpMethod {
+        return this._method;
+    }
+
     get type(): RequestMode {
         return this._type;
     }
-
 
     public format(body: IPostmanRequestBody): IPostmanRequestBody {
         return this._format ? this._format(body) : body;
@@ -56,7 +72,17 @@ export default class PostmanRequestWrapperTemplate {
         this._headers = headers;
     }
 
-    public static ofConfig(path: Path, type: RequestMode, format?: (body: IPostmanRequestBody) => IPostmanRequestBody, values?: Array<PostmanFormdata>) {
-        return new PostmanRequestWrapperTemplate(path, type, format, values)
+    public static ofConfig(
+        path: Path,
+        method: HttpMethod,
+        type: RequestMode,
+        format?: (body: IPostmanRequestBody) => IPostmanRequestBody,
+        values?: Array<PostmanFormdata>
+    ) {
+        return new PostmanRequestWrapperTemplate(path, method, type, format, values)
+    }
+
+    public allowMode(mode: RequestMode): boolean {
+        return this._type.isAll() || this._type.equalsValue(mode);
     }
 }

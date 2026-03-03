@@ -90,7 +90,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
 
     private readonly toPostmanRequest = (spec: ApiSpecification): PostmanRequest => {
         const pathVariables = spec.hasParameters ? this.extractPathVariables(spec.parameters!) : [];
-        const url = new PostmanUrl(this._configures.host, spec, pathVariables, this._configures.valuePlaceholder);
+        const url = new PostmanUrl(this._configures, spec, pathVariables);
         const body = this.extractRequestBody(spec);
 
         const defaultTemplateHeaders = this._configures.getDefaultHeaders(spec.path);
@@ -133,32 +133,24 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
     }
 
     private readonly extractRequestBody = (specification: ApiSpecification): PostmanBodyWrapper | undefined => {
-        //form data 의 경우
+        if (specification.requestBody instanceof EmptyBody) {
+            return undefined;
+        }
+
         if (specification.hasParameters) {
             const parameters = specification.parameters!;
             const queryParameters = parameters.getValues(InType.QUERY);
 
-            //Query String
-            if (specification.requestBody instanceof EmptyBody) {
-                return undefined;
-            }
-
             const formdata = this.toPostmanFormData(queryParameters);
-            formdata.concat(this._configures.getDefaultParameters(specification.path))
+            formdata.concat(this._configures.getDefaultParameters(specification.path, specification.method))
 
             return PostmanBodyWrapper.fromFormData(formdata);
         }
 
+        const rawBody = this.toPostmanRawBody(specification.requestBody.fields);
+        const wrappedBody = this._configures.wrappingBody(specification.path, specification.method, rawBody);
 
-        //Request Body 또는 비어있는 경우
-        if (specification.requestBody instanceof EmptyBody) {
-            return undefined;
-        } else {
-            const rawBody = this.toPostmanRawBody(specification.requestBody.fields);
-            const wrappedBody = this._configures.wrappingBody(specification.path, rawBody);
-
-            return PostmanBodyWrapper.fromRaw(wrappedBody);
-        }
+        return PostmanBodyWrapper.fromRaw(wrappedBody);
     }
 
     private readonly toPostmanFormData = (queryParameters: Array<Parameter>): Array<PostmanFormdata> => {
@@ -211,7 +203,7 @@ export default class PostmanCollectionConverter implements IOpenapiConverter {
     }
 
     private toPostmanEvent(specification: ApiSpecification): Array<PostmanEvent> | undefined {
-        const defaultEvent = this._configures.getDefaultEvent(specification.path);
+        const defaultEvent = this._configures.getDefaultEvent(specification.path, specification.method);
         if (defaultEvent.length === 0) return undefined;
 
         const events = new Array<PostmanEvent>();

@@ -8,6 +8,8 @@ import PostmanRequestWrapperTemplate from "@/type/postman/postman-request-wrappe
 import RequestMode from "@/type/postman/constant/request-mode";
 import PostmanFormdata from "@/type/postman/postman-formdata";
 import {PostmanEventScript} from "@/type/postman/constant/postman-event-script";
+import HttpMethod from "@/type/open-api/constant/http-method"
+import ApiSpecification from "@/type/open-api/api-specification";
 
 export default class PostmanConvertConfigures {
 
@@ -47,9 +49,9 @@ export default class PostmanConvertConfigures {
         return this._valuePlaceholder;
     }
 
-    public wrappingBody(path: Path, body: IPostmanRequestBody): IPostmanRequestBody {
+    public wrappingBody(path: Path, method: HttpMethod, body: IPostmanRequestBody): IPostmanRequestBody {
         const found = this._defaultRequestWrappers.find(template =>
-            template.type.equalsValue(RequestMode.RAW) && template.path.matches(path));
+            template.allowMode(RequestMode.RAW) && template.isMatchedHandler(path, method));
 
         if (found) {
             return found.format(body);
@@ -57,22 +59,23 @@ export default class PostmanConvertConfigures {
         return body as IPostmanRequestBody;
     }
 
-    public getDefaultParameters(path: Path): Array<PostmanFormdata> {
+    public getDefaultParameters(path: Path, method: HttpMethod): Array<PostmanFormdata> {
         const found = this._defaultRequestWrappers.find(template =>
-            template.type.equalsValue(RequestMode.FORMDATA) && template.path.matches(path));
+            template.allowMode(RequestMode.FORM_DATA) && template.isMatchedHandler(path, method));
         if (found) {
             return found.values;
         }
         return [];
     }
 
-    public getDefaultEvent(path: Path): Array<PostmanEventScript> {
+    public getDefaultEvent(path: Path, method: HttpMethod): Array<PostmanEventScript> {
         const found = this._defaultRequestWrappers.filter(template =>
-            template.path.matches(path));
+            template.isMatchedHandler(path, method));
         return found
             .filter(matched => matched.event !== undefined)
             .map(matched => matched.event!);
     }
+
 
     public getDefaultHeaders(path: Path): Array<PostmanHeader> {
         const found = this._defaultRequestWrappers.filter(template =>
@@ -100,5 +103,11 @@ export default class PostmanConvertConfigures {
         this._casingMode = parsedPostmanOption.caseMode;
         this._valuePlaceholder = parsedPostmanOption.placeholders;
         this._defaultRequestWrappers = parsedPostmanOption.templates;
+    }
+
+    public getMatchedRequestWrapperTemplate(spec: ApiSpecification): PostmanRequestWrapperTemplate | undefined {
+        return this._defaultRequestWrappers
+            .find(template => template.isMatchedHandler(spec.path, spec.method));
+
     }
 }
