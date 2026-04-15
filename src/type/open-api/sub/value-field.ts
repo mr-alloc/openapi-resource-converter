@@ -47,10 +47,11 @@ export default class ValueField implements IField {
     }
 
     public static fromProperty(property: Property) {
+        const dataType = DataType.fromValue(getProp(property.value, NamedLiteral.TYPE));
         return new ValueField(
             property.name,
             getPropOrDefault(property.value, NamedLiteral.DESCRIPTION, ''),
-            DataType.fromValue(getProp(property.value, NamedLiteral.TYPE)),
+            dataType,
             DataFormat.fromValue(getProp(property.value, NamedLiteral.FORMAT)),
             '',
             getPropOrDefault(property.value, NamedLiteral.EXAMPLE, '')

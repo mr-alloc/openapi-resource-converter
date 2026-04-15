@@ -7,12 +7,14 @@ export default class ObjectField implements IField {
     private readonly _description: string;
     private readonly _type: DataType;
     private readonly _fields: Array<IField>;
+    private readonly _superFields: Array<IField>;
 
-    constructor(name: string, description: string, type: DataType, fields: Array<IField>) {
+    constructor(name: string, description: string, type: DataType, fields: Array<IField>, superFields: Array<IField> = []) {
         this._name = name;
         this._description = description;
         this._type = type;
         this._fields = fields;
+        this._superFields = superFields;
     }
 
     get name(): string {
@@ -29,6 +31,10 @@ export default class ObjectField implements IField {
 
     get fields(): Array<IField> {
         return this._fields;
+    }
+
+    get superFields(): Array<IField> {
+        return this._superFields;
     }
 
     public toJSON() {

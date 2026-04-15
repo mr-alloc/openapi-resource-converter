@@ -1,7 +1,7 @@
 import NamedLiteral from "@/type/open-api/constant/named-literal";
 import IField from "@/type/open-api/sub/i-field";
-import {getProp, getDeepProps, hasProp, Property, toProps} from "@/util/object-util";
-import {toMap, toValueMap} from "@/util/collection-util";
+import {getArrayProp, getDeepProps, getProp, hasProp, Property} from "@/util/object-util";
+import {toMap} from "@/util/collection-util";
 import DataType from "@/type/open-api/constant/data-type";
 import ValueField from "@/type/open-api/sub/value-field";
 import ObjectField from "@/type/open-api/sub/object-field";
@@ -29,41 +29,60 @@ export default class ComponentParser {
         //따라서 properties.{param_name}.$ref 가 있다면 해당 값으로 먼저 파싱된 객체가 있는지를 확인하고, 없다면 만들어서 캐시한다.
         for (const property of this._properties) {
             //각 스키마별로 파싱한다.
-            this.parseSchema(property);
+            this.parseComponentObject(property);
         }
 
         return this._cache;
     }
 
-    private parseSchema(property: Property) {
-        //아직 object type 외에는 존재하지 않는다.
-        if (DataType.OBJECT.equalsValue(getProp<string>(property.value, NamedLiteral.TYPE))) {
-            const referenceKey = hasProp(property.value, NamedLiteral.REFERENCE_KEY)
-                ? getProp<string>(property.value, NamedLiteral.REFERENCE_KEY)
-                : this.COMPONENTS_KEY_PREFIX + property.name;
-            this.retrieveCacheRecursively(referenceKey)
-        }
+    private ensureComponentName(name: string): string {
+        return name.startsWith(this.COMPONENTS_KEY_PREFIX) ? name : this.COMPONENTS_KEY_PREFIX + name;
     }
 
-    private retrieveCacheRecursively(referenceKey: string): Array<IField> {
-        if (this._cache.has(referenceKey)) {
-            return this._cache.get(referenceKey)!;
+    //Schema에는 하위 항목들이 들어갈 수 있음.
+    //공통 (description: 설명)
+    //$ref: 참조되는 객체 타입
+    //allOf: 해당 타입들을 포함하는 모든 정보
+    //oneOf: 이들 중 한개의 타입을 포함하는 모든 정보
+    //type: 위 정보들이 아닌 객체 및 값을 타입
+    private parseComponentObject(component: Property, cache: boolean = true): Array<IField> {
+        if (cache && this._cache.has(this.ensureComponentName(component.name))) {
+            return this._cache.get(this.ensureComponentName(component.name))!;
         }
-
-        const parent = this._rootProperty.get(referenceKey)!;
-        const properties = getDeepProps(parent.value, [NamedLiteral.PROPERTIES]);
         const fields = new Array<IField>();
-
-        for (const property of properties) {
-            if (hasProp(property.value, NamedLiteral.REFERENCE_KEY)) {
-                const referenceKey = getProp<string>(property.value, NamedLiteral.REFERENCE_KEY);
-                const cached = this.retrieveCacheRecursively(referenceKey);
-                fields.push(new ObjectField(property.name, '', DataType.OBJECT, cached));
+        const hasType = hasProp(component?.value, NamedLiteral.TYPE);
+        if (hasType) {
+            if (DataType.OBJECT.equalsValue(getProp(component?.value, NamedLiteral.TYPE))) {
+                const objectFields = new Array<IField>();
+                for (const property of getDeepProps(component.value, [NamedLiteral.PROPERTIES])) {
+                    objectFields.push(...this.parseComponentObject(property, false));
+                }
+                fields.push(new ObjectField(component.name, getProp<string>(component.value, NamedLiteral.DESCRIPTION),
+                    DataType.OBJECT, objectFields));
             } else {
-                fields.push(ValueField.fromProperty(property));
+                fields.push(ValueField.fromProperty(component));
             }
+        } else if (hasProp(component.value, NamedLiteral.ALL_OF)) {
+            const allOfArray = getArrayProp<any>(component.value, NamedLiteral.ALL_OF);
+            const referenceKey = getProp<string>(allOfArray[0], NamedLiteral.REFERENCE_KEY);
+            fields.push(new ObjectField(component.name, getProp<string>(component.value, NamedLiteral.DESCRIPTION),
+                DataType.OBJECT,
+                this.parseComponentObject(new Property("", allOfArray[1])),
+                this.parseComponentObject(this._rootProperty.get(referenceKey)!)
+            ));
+        } else if (hasProp(component.value, NamedLiteral.ONE_OF)) {
+            //요청 생성에는 최상위 공통정보만 사용하지만, 파싱할 때는, 모든 정보를 저장한다.
+            const oneOfArray = getArrayProp<any>(component.value, NamedLiteral.ONE_OF);
+            for (const element of oneOfArray) {
+                fields.push(...this.parseComponentObject(new Property("", element), false));
+            }
+        } else if (hasProp(component.value, NamedLiteral.REFERENCE_KEY)) {
+            const property = this._rootProperty.get(getProp<string>(component.value, NamedLiteral.REFERENCE_KEY))!;
+            fields.push(...this.parseComponentObject(property));
         }
-        this._cache.set(referenceKey, fields);
+        if (cache) {
+            this._cache.set(this.ensureComponentName(component.name), fields);
+        }
         return fields;
     }
 }

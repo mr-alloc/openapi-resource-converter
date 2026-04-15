@@ -98,6 +98,11 @@ export function getPropRecursive<T>(object: any | undefined, tokenPath: string):
     return getPropRecursiveInternal<T>(object, tokens, 0);
 }
 
+export function getArrayProp<T>(value: any, key: string): Array<T> {
+    const result = value?.[key];
+    return Array.isArray(result) ? (result as Array<T>) : [];
+}
+
 function getPropRecursiveInternal<T>(object: any, tokens: Array<string>, index: number): T {
     const parseTarget = object?.[tokens[index]];
     const hasDepth = tokens.length - 1 > index;
