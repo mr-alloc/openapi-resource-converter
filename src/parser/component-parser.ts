@@ -1,6 +1,6 @@
 import NamedLiteral from "@/type/open-api/constant/named-literal";
 import IField from "@/type/open-api/sub/i-field";
-import {getArrayProp, getDeepProps, getProp, hasProp, Property} from "@/util/object-util";
+import {getArrayProp, getDeepProps, getProp, getPropOrDefault, hasProp, Property} from "@/util/object-util";
 import {toMap} from "@/util/collection-util";
 import DataType from "@/type/open-api/constant/data-type";
 import ValueField from "@/type/open-api/sub/value-field";
@@ -29,7 +29,7 @@ export default class ComponentParser {
         //따라서 properties.{param_name}.$ref 가 있다면 해당 값으로 먼저 파싱된 객체가 있는지를 확인하고, 없다면 만들어서 캐시한다.
         for (const property of this._properties) {
             //각 스키마별로 파싱한다.
-            this.parseComponentObject(property);
+            this.parseComponentObject(property, {cache: true, superClass: false});
         }
 
         return this._cache;
@@ -45,44 +45,86 @@ export default class ComponentParser {
     //allOf: 해당 타입들을 포함하는 모든 정보
     //oneOf: 이들 중 한개의 타입을 포함하는 모든 정보
     //type: 위 정보들이 아닌 객체 및 값을 타입
-    private parseComponentObject(component: Property, cache: boolean = true): Array<IField> {
-        if (cache && this._cache.has(this.ensureComponentName(component.name))) {
+
+    private parseComponentObject(component: Property, option: ParseOption = {
+        cache: true,
+        superClass: false
+    }): Array<IField> {
+        if (option.cache && this._cache.has(this.ensureComponentName(component.name))) {
             return this._cache.get(this.ensureComponentName(component.name))!;
         }
         const fields = new Array<IField>();
         const hasType = hasProp(component?.value, NamedLiteral.TYPE);
+
         if (hasType) {
             if (DataType.OBJECT.equalsValue(getProp(component?.value, NamedLiteral.TYPE))) {
                 const objectFields = new Array<IField>();
                 for (const property of getDeepProps(component.value, [NamedLiteral.PROPERTIES])) {
-                    objectFields.push(...this.parseComponentObject(property, false));
+                    const propertyFields = this.parseComponentObject(property, {
+                        cache: false,
+                        superClass: option.superClass
+                    });
+
+                    const hasOneOf = hasProp(property.value, NamedLiteral.ONE_OF);
+                    const hasAllOf = hasProp(property.value, NamedLiteral.ALL_OF);
+                    const isObject = DataType.OBJECT.equalsValue(getProp(property.value, NamedLiteral.TYPE));
+
+                    const wrappedFields = (isObject || hasOneOf || hasAllOf)
+                        ? [new ObjectField(property.name, getPropOrDefault(property.value, NamedLiteral.DESCRIPTION, ''), DataType.OBJECT, propertyFields, false)]
+                        : propertyFields;
+                    objectFields.push(...wrappedFields);
                 }
-                fields.push(new ObjectField(component.name, getProp<string>(component.value, NamedLiteral.DESCRIPTION),
-                    DataType.OBJECT, objectFields));
+                fields.push(...objectFields);
             } else {
-                fields.push(ValueField.fromProperty(component));
+                fields.push(ValueField.fromProperty(component, option.superClass));
             }
         } else if (hasProp(component.value, NamedLiteral.ALL_OF)) {
             const allOfArray = getArrayProp<any>(component.value, NamedLiteral.ALL_OF);
             const referenceKey = getProp<string>(allOfArray[0], NamedLiteral.REFERENCE_KEY);
-            fields.push(new ObjectField(component.name, getProp<string>(component.value, NamedLiteral.DESCRIPTION),
-                DataType.OBJECT,
-                this.parseComponentObject(new Property("", allOfArray[1])),
-                this.parseComponentObject(this._rootProperty.get(referenceKey)!)
-            ));
+
+            fields.push(...this.parseComponentObject(this._rootProperty.get(referenceKey)!, {
+                cache: true,
+                superClass: true
+            }));
+            if (allOfArray.length > 1) {
+                fields.push(...this.parseComponentObject(new Property("", allOfArray[1]), {
+                    cache: false,
+                    superClass: false
+                }));
+            }
         } else if (hasProp(component.value, NamedLiteral.ONE_OF)) {
             //요청 생성에는 최상위 공통정보만 사용하지만, 파싱할 때는, 모든 정보를 저장한다.
             const oneOfArray = getArrayProp<any>(component.value, NamedLiteral.ONE_OF);
+            const superClassFields = new Array<IField>();
             for (const element of oneOfArray) {
-                fields.push(...this.parseComponentObject(new Property("", element), false));
+                const allFields = this.parseComponentObject(new Property("", element), {
+                    cache: false,
+                    superClass: false
+                });
+                if (superClassFields.length === 0) {
+                    //allFields에 있는 구현체 한개(object)를 찾아서, super class field만 가져오기
+                    const implementation = allFields.find(field => DataType.OBJECT.equalsValue(field.type.value));
+                    if (implementation) {
+                        const foundFields = (implementation as ObjectField).fields.filter(field => field.isSuperClass);
+                        superClassFields.push(...foundFields);
+                    }
+                }
             }
+            fields.push(...superClassFields);
         } else if (hasProp(component.value, NamedLiteral.REFERENCE_KEY)) {
             const property = this._rootProperty.get(getProp<string>(component.value, NamedLiteral.REFERENCE_KEY))!;
-            fields.push(...this.parseComponentObject(property));
+            const referenceFields = this.parseComponentObject(property);
+            //ref는 필드명으로 넣는다.
+            fields.push(new ObjectField(component.name, getPropOrDefault(property.value, NamedLiteral.DESCRIPTION, ''), DataType.OBJECT, referenceFields, false));
         }
-        if (cache) {
+        if (option.cache) {
             this._cache.set(this.ensureComponentName(component.name), fields);
         }
         return fields;
     }
+}
+
+type ParseOption = {
+    cache: boolean; //컴포넌트 캐시 여부
+    superClass: boolean; //부모 클래스에서 선언된 필드 여부
 }

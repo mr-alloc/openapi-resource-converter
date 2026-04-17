@@ -9,6 +9,7 @@ export default {
     TYPE: "type",
     DESCRIPTION: "description",
     FORMAT: "format",
+    ITEMS: "items",
     EXAMPLE: "example",
     SUMMARY: "summary",
     TAGS: "tags",
