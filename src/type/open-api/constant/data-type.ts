@@ -49,4 +49,8 @@ export default class DataType {
     public isObject(): boolean {
         return this._value === DataType.OBJECT.value;
     }
+
+    public isArray() {
+        return DataType.ARRAY.equalsValue(this._value);
+    }
 }

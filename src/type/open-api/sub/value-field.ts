@@ -1,8 +1,9 @@
 import DataType from "@/type/open-api/constant/data-type";
 import DataFormat from "@/type/open-api/constant/data-format";
 import IField from "@/type/open-api/sub/i-field";
-import {getProp, getPropOrDefault, Property} from "@/util/object-util";
+import {getDeepProp, getProp, getPropOrDefault, Property} from "@/util/object-util";
 import NamedLiteral from "@/type/open-api/constant/named-literal";
+import {TypeFormat} from "@/type/open-api/sub/TypeFormat";
 
 export default class ValueField implements IField {
 
@@ -10,16 +11,25 @@ export default class ValueField implements IField {
     private readonly _description: string;
     private readonly _type: DataType;
     private readonly _format: DataFormat;
-    private readonly _value: string;
-    private readonly _example: string;
+    private readonly _items?: TypeFormat;
+    private readonly _value?: string;
+    private readonly _example?: string;
+    private readonly _superClass: boolean
 
-    constructor(name: string, description: string, type: DataType, format: DataFormat, value: string, example: string) {
-        this._name = name;
-        this._description = description;
-        this._type = type;
-        this._format = format;
-        this._value = value;
-        this._example = example;
+    constructor(property: Property, superClass: boolean) {
+        this._name = property.name;
+        this._description = getPropOrDefault(property.value, NamedLiteral.DESCRIPTION, '');
+        this._type = DataType.fromValue(getProp(property.value, NamedLiteral.TYPE));
+        this._format = DataFormat.fromValue(getDeepProp(property.value, [NamedLiteral.FORMAT]).value);
+        if (this._type.isArray()) {
+            const itemsTypeValue = getDeepProp(property.value, [NamedLiteral.ITEMS, NamedLiteral.TYPE]);
+            const itemsFormatValue = getDeepProp(property.value, [NamedLiteral.ITEMS, NamedLiteral.FORMAT]);
+            this._items = new TypeFormat(DataType.fromValue(itemsTypeValue.value), DataFormat.fromValue(itemsFormatValue.value))
+        } else {
+            this._value = '';
+            this._example = getPropOrDefault(property.value, NamedLiteral.EXAMPLE, '');
+        }
+        this._superClass = superClass;
     }
 
     get name(): string {
@@ -38,23 +48,24 @@ export default class ValueField implements IField {
         return this._format;
     }
 
-    get value(): string {
+    get value(): string | undefined {
         return this._value;
     }
 
-    get example(): string {
+    get items(): TypeFormat | undefined {
+        return this._items;
+    }
+
+    get example(): string | undefined {
         return this._example;
     }
 
-    public static fromProperty(property: Property) {
-        return new ValueField(
-            property.name,
-            getPropOrDefault(property.value, NamedLiteral.DESCRIPTION, ''),
-            DataType.fromValue(getProp(property.value, NamedLiteral.TYPE)),
-            DataFormat.fromValue(getProp(property.value, NamedLiteral.FORMAT)),
-            '',
-            getPropOrDefault(property.value, NamedLiteral.EXAMPLE, '')
-        );
+    get isSuperClass(): boolean {
+        return this._superClass;
+    }
+
+    public static fromProperty(property: Property, superClass: boolean) {
+        return new ValueField(property, superClass);
     }
 
     public toString(): string {

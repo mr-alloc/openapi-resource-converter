@@ -5,4 +5,6 @@ export default interface IField {
     get name(): string;
     get type(): DataType;
 
+    get isSuperClass(): boolean;
+
 }
