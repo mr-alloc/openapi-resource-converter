@@ -60,7 +60,7 @@ export default class CaseMode {
             mode._casingRegexp.lastIndex = 0;
             return isMatched;
         });
-        if (!found) throw new Error(`Cannot find casing for value: ${value}`);
+        if (!found) return CaseMode.CAMEL;
         return found;
     }
 

@@ -34,7 +34,7 @@ export default class HttpMethod {
     }
 
     static values(): Array<HttpMethod> {
-        return [HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH, HttpMethod.HEAD, HttpMethod.OPTIONS];
+        return [HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH, HttpMethod.HEAD, HttpMethod.OPTIONS, HttpMethod.ALL];
     }
 
     public toString(): string {
